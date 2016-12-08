@@ -40,7 +40,7 @@ endif
 
 ifneq ($(DVB_TUNER_FW),)
 define OPENCDMI_INSTALL_TARGET_BINS
-        $(INSTALL) -D -m 0755 package/dvb-apps/$(DVB_TUNER_FW) $(TARGET_DIR)/usr/lib/firmware/
+        $(INSTALL) -D -m 0755 package/dvb-apps/$(DVB_TUNER_FW) $(TARGET_DIR)/lib/firmware/
 endef
 endif
 

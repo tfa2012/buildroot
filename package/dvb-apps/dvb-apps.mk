@@ -34,6 +34,16 @@ define DVB_APPS_INSTALL_STAGING_CMDS
 		$(DVB_APPS_MAKE_OPTS) DESTDIR=$(STAGING_DIR) install
 endef
 
+ifeq ($(BR2_PACKAGE_DVB_WINTV_TUNER),y)
+DVB_TUNER_FW = dvb-fe-xc5000c-4.1.30.7.fw
+endif
+
+ifneq ($(DVB_TUNER_FW),)
+define OPENCDMI_INSTALL_TARGET_BINS
+        $(INSTALL) -D -m 0755 package/dvb-apps/$(DVB_TUNER_FW) $(TARGET_DIR)/usr/lib/firmware/
+endef
+endif
+
 define DVB_APPS_INSTALL_TARGET_CMDS
 	$(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D) \
 		$(DVB_APPS_MAKE_OPTS) DESTDIR=$(TARGET_DIR) install

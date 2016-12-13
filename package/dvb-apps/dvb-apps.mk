@@ -38,7 +38,7 @@ ifeq ($(BR2_PACKAGE_DVB_WINTV_TUNER),y)
 DVB_TUNER_FW = dvb-fe-xc5000c-4.1.30.7.fw
 endif
 
-ifneq ($(DVB_TUNER_FW),"not set")
+ifneq ($(DVB_TUNER_FW),)
 define DVB_APPS_INSTALL_TARGET_CMDS
 	 $(MAKE) -C $(@D) $(DVB_APPS_MAKE_OPTS) DESTDIR=$(TARGET_DIR) install
      mkdir -p $(TARGET_DIR)/lib/firmware/

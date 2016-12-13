@@ -38,15 +38,17 @@ ifeq ($(BR2_PACKAGE_DVB_WINTV_TUNER),y)
 DVB_TUNER_FW = dvb-fe-xc5000c-4.1.30.7.fw
 endif
 
-ifneq ($(DVB_TUNER_FW),)
-define OPENCDMI_INSTALL_TARGET_BINS
-        $(INSTALL) -D -m 0755 package/dvb-apps/$(DVB_TUNER_FW) $(TARGET_DIR)/lib/firmware/
+ifneq ($(DVB_TUNER_FW),"not set")
+define DVB_APPS_INSTALL_TARGET_CMDS
+	 $(MAKE) -C $(@D) $(DVB_APPS_MAKE_OPTS) DESTDIR=$(TARGET_DIR) install
+     mkdir -p $(TARGET_DIR)/lib/firmware/
+     $(INSTALL) -D -m 0755 package/dvb-apps/$(DVB_TUNER_FW) $(TARGET_DIR)/lib/firmware/
 endef
-endif
-
+else
 define DVB_APPS_INSTALL_TARGET_CMDS
 	$(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D) \
 		$(DVB_APPS_MAKE_OPTS) DESTDIR=$(TARGET_DIR) install
 endef
+endif
 
 $(eval $(generic-package))

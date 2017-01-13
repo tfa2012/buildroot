@@ -1,0 +1,59 @@
+#!/bin/sh
+
+start() {
+	# Core dumps
+	#echo 1 > /proc/sys/kernel/core_uses_pid
+	#echo 2 > /proc/sys/fs/suid_dumpable
+	#echo "/root/cores/core-pid_%p--process%E" > /proc/sys/kernel/core_pattern
+	#mkdir -p /root/cores
+	#ulimit -c unlimited
+        start-stop-daemon -S -q -b -m -p /var/run/TVplayback.pid -b </dev/null >/dev/null 2>&1
+        echo Start_Playback
+        rm -rf /etc/TVTune.txt
+        touch /etc/TVTune.txt
+        state=" "
+        old_state=$state
+        while inotifywait -q -e modify /etc/TVTune.txt >/dev/null;
+        do
+            state=$(cat /etc/TVTune.txt |cut -f 1 -d ":" )
+            if [ "$state" = "STOP" ]; then
+                if [ "$state" != "$old_state" ]; then
+                     if [ -f /var/run/player.pid ]; then        
+                         start-stop-daemon -K -q -p /var/run/player.pid
+                      fi
+                fi
+            fi
+            if [ "$state" = "PLAY" ]; then
+                if [ "$state" != "$old_state" ]; then
+                 cat /etc/TVTune.txt | awk -F':' '{print "start-stop-daemon -b -S -q -m -p /var/run/player.pid --exec gst-launch-1.0 dvbsrc frequency="$2 " delsys=\"atsc\" modulation=\"8vsb\" pids="$3":"$4":"$5 " ! decodebin name=dec dec. ! videoconvert ! autovideosink dec. ! audioconvert ! autoaudiosink"}' | sh
+                fi
+            fi
+            old_state=$state
+        done
+}
+stop() {
+	echo -n "Stopping GST Playback "
+        killall -9 gst-launch-1.0
+}
+restart() {
+	stop
+	sleep 3
+	start
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|reload)
+		restart
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
+
+exit $?

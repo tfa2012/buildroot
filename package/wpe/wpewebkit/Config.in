@@ -130,7 +130,7 @@ config BR2_PACKAGE_WPEWEBKIT_ENABLE_MEDIA_SOURCE
 
 config BR2_PACKAGE_WPEWEBKIT_USE_ENCRYPTED_MEDIA
 	bool "Encrypted Media Extensions (EME)"
-	default y
+    default y
 	help
 	  Use Enable Encrypted Media Extensions (EME) API.
 

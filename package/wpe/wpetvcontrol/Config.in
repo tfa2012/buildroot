@@ -1,0 +1,5 @@
+config BR2_PACKAGE_WPETVCONTROL
+	bool "wpetvcontrol"
+    default y
+	help
+	  Base library for TVControl API.

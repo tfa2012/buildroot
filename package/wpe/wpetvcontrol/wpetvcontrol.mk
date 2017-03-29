@@ -1,0 +1,32 @@
+################################################################################
+#
+# WPETVControl
+#
+################################################################################
+
+WPETVCONTROL_VERSION = bcfb78e834972fea677c581b210f563ef4cc14e7
+WPETVCONTROL_SITE = $(call github,WebPlatformForEmbedded,WPETVControl,$(WPETVCONTROL_VERSION))
+WPETVCONTROL_INSTALL_STAGING = YES
+
+ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
+WPETVCONTROL_FLAGS += -DUSE_WPE_BACKEND_BCM_RPI=ON
+endif
+ifeq ($(BR2_PACKAGE_BCM_REFSW),y)
+WPETVCONTROL_FLAGS += -DUSE_WPE_BACKEND_BCM_NEXUS=ON
+endif
+
+ifeq ($(BR2_PACKAGE_DVB_APPS),y)
+WPETVCONTROL_FLAGS +=-DUSE_WPE_TVCONTROL_BACKEND_LINUX_DVB=ON
+WPETVCONTROL_DEPENDENCIES = dvb-apps
+define WPETVCONTROL_POST_TARGET_INITD
+    $(INSTALL) -D -m 0755 package/wpe/S90Playback $(TARGET_DIR)/etc/init.d
+endef
+WPETVCONTROL_POST_INSTALL_TARGET_HOOKS += WPETVCONTROL_POST_TARGET_INITD
+endif
+
+WPETVCONTROL_CONF_OPTS += \
+    -DCMAKE_C_FLAGS="$(TARGET_CFLAGS) -D_GNU_SOURCE" \
+    -DCMAKE_CXX_FLAGS="$(TARGET_CXXFLAGS) -D_GNU_SOURCE" \
+     $(WPETVCONTROL_FLAGS)
+
+$(eval $(cmake-package))

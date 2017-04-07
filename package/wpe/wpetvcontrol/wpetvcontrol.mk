@@ -5,7 +5,8 @@
 ################################################################################
 
 WPETVCONTROL_VERSION = 62fefdeab9b7e1327467e160a0b8dbca7fe742ab
-WPETVCONTROL_SITE = $(call github,WebPlatformForEmbedded,WPETVControl,$(WPETVCONTROL_VERSION))
+WPETVCONTROL_SITE_METHOD = git
+WPETVCONTROL_SITE = git@github.com:WebPlatformForEmbedded/WPETVControl.git
 WPETVCONTROL_INSTALL_STAGING = YES
 
 ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)

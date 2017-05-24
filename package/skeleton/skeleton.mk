@@ -141,7 +141,8 @@ endif
 ifeq ($(BR2_TARGET_GENERIC_CABUNDLE),y)
 define SYSTEM_CABUDLE
 	mkdir -p $(TARGET_DIR)/etc/ssl/certs/
-	$(WGET) -O $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt http://curl.haxx.se/ca/cacert.pem
+	#$(WGET) -O $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt http://curl.haxx.se/ca/cacert.pem
+        cp /home/enrique/ca-certificates.crt $(TARGET_DIR)/etc/ssl/certs/ca-certificates.crt
 endef
 TARGET_FINALIZE_HOOKS += SYSTEM_CABUDLE
 endif

@@ -1,0 +1,56 @@
+#ifconfig eth2:0 192.168.17.10
+
+function start()
+{
+    ifconfig eth0 up
+    ifconfig eth1 up
+    vconfig add eth0 121
+    vconfig add eth0 3
+    ifconfig eth0.121 hw ether 00:00:00:00:00:00
+    ifconfig eth0.3 hw ether 00:00:00:00:00:00
+    ifconfig eth0.3 192.168.17.10
+    ifconfig eth0.121 up
+
+    ifconfig eth1 hw ether 00:00:00:00:00:00
+#    ifconfig eth1 up
+    vconfig add eth1 121
+    ifconfig eth1.121 hw ether 00:00:00:00:00:00
+    ifconfig eth1.121 up
+
+    brctl addbr br0
+    brctl stp br0 0
+    brctl addbr br1
+    brctl stp br1 0
+    brctl addif br0 eth0
+    brctl addif br0 eth1
+    brctl addif br1 eth0.121
+    brctl addif br1 eth1.121
+    
+    ifconfig br0 up
+    ifconfig br1 up
+
+    udhcpc -n -i br0
+    udhcpc -n -i br1
+    #ifconfig br0 192.168.1.154  netmask 255.255.255.0 up
+    #ifconfig br1 172.19.130.98  netmask 255.255.255.0 up
+    #udhcpc -n org.pace.psf.udhcpc_br0 -p /org/pace/psf/udhcpc_br0
+
+    route add -net 172.19.130.0 netmask 255.255.255.0 dev br1
+    route add default gw 172.19.130.1
+}
+
+function stop()
+{
+    echo "stopping"
+    ifconfig eth0 down
+    ifconfig eth1 down
+    
+    ifconfig br0 down
+    ifconfig br1 down
+    
+    brctl delbr br0
+    brctl delbr br1
+}
+
+$1
+brctl show

@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-WPETVCONTROL_VERSION = 48bfc90e3696279fc75f561e589aba4b710e991f
+WPETVCONTROL_VERSION = 236c60b35427d988c9b2946f350f2b66ea8a06a6
 WPETVCONTROL_SITE_METHOD = git
 WPETVCONTROL_SITE = git@github.com:WebPlatformForEmbedded/WPETVControl.git
 WPETVCONTROL_INSTALL_STAGING = YES

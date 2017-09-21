@@ -1,5 +1,8 @@
 config BR2_PACKAGE_WPETVCONTROL
 	bool "wpetvcontrol"
+    select BR2_PACKAGE_CPPSDK
+    select BR2_PACKAGE_CPPSDK_RPC
+    select BR2_PACKAGE_CPPSDK_WEBSOCKET
     default y
 	help
 	  Base library for TVControl API.

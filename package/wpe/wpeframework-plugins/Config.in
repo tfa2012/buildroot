@@ -155,36 +155,6 @@ config BR2_PACKAGE_WPEFRAMEWORK_IOCONNECTOR
 	help
 	  Take custom action on hardware pins that changes state.
 
-menuconfig BR2_PACKAGE_WPEFRAMEWORK_SICONTROL
-        select BR2_PACKAGE_SQLITE
-        select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-	bool "SICONTROL"
-	help
-	   SI parsing ON OFF plugin
-if BR2_PACKAGE_WPEFRAMEWORK_SICONTROL
-    choice
-        bool "DBS Options"
-        default BR2_PACKAGE_WPEFRAMEWORK_SICONTROL_DVB
-        help
-            Choose the DBS flavor.
-
-        menuconfig BR2_PACKAGE_WPEFRAMEWORK_SICONTROL_DVB
-        bool "DVB"
-        help
-            DVB parser
-
-        menuconfig BR2_PACKAGE_WPEFRAMEWORK_SICONTROL_ATSC
-        select BR2_PACKAGE_DVB_APPS
-        bool "ATSC"
-        help
-            ATSC parser
-
-    endchoice
-
-config BR2_PACKAGE_WPEFRAMEWORK_SICONTROL_AUTOSTART
-    bool "autostart"
-    default n
-endif
 
 menuconfig BR2_PACKAGE_WPEFRAMEWORK_LOCATIONSYNC
     select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
@@ -620,7 +590,11 @@ config BR2_PACKAGE_WPEFRAMEWORK_POWER_GPIOTYPE
 endif
 
 comment "External plugins below"
-	  Tuner Plugin
+     Tuner Plugin
+    select BR2_PACKAGE_DVB_APPS if BR2_PACKAGE_RPI_FIRMWARE
+    bool "Tuner"
+    help
+      Tuner Plugin
 
 if BR2_PACKAGE_WPEFRAMEWORK_TUNER
     choice
@@ -635,12 +609,24 @@ if BR2_PACKAGE_WPEFRAMEWORK_TUNER
             Enable DVB DBS
 
         menuconfig BR2_PACKAGE_WPEFRAMEWORK_TUNER_ATSC
-        select BR2_PACKAGE_DVB_APPS
         bool "ATSC"
         help
             Enable ATSC DBS
 
     endchoice
+    menuconfig BR2_PACKAGE_WPEFRAMEWORK_SICONTROL
+        select BR2_PACKAGE_SQLITE
+        select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
+        select BR2_PACKAGE_DVB_APPS if BR2_PACKAGE_WPEFRAMEWORK_TUNER_ATSC
+	bool "SICONTROL"
+	help
+	   SI parsing ON OFF plugin
+
+    if BR2_PACKAGE_WPEFRAMEWORK_SICONTROL
+        config BR2_PACKAGE_WPEFRAMEWORK_SICONTROL_AUTOSTART
+        bool "autostart"
+        default n
+    endif
 endif
 
 config BR2_PACKAGE_WPEFRAMEWORK_RPCLINK

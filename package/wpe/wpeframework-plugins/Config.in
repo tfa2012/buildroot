@@ -591,42 +591,33 @@ endif
 
 comment "External plugins below"
      Tuner Plugin
+config BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
+	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
+    select BR2_PACKAGE_SQLITE
     select BR2_PACKAGE_DVB_APPS if BR2_PACKAGE_RPI_FIRMWARE
-    bool "Tuner"
+    bool "TVControl"
     help
-      Tuner Plugin
+      TVControl Plugin
 
-if BR2_PACKAGE_WPEFRAMEWORK_TUNER
+if BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
     choice
         bool "DBS Options"
-        default BR2_PACKAGE_WPEFRAMEWORK_TUNER_DVB
+        default BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL_DVB
         help
             Choose the DBS flavor.
 
-        menuconfig BR2_PACKAGE_WPEFRAMEWORK_TUNER_DVB
+        menuconfig BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL_DVB
         bool "DVB"
         help
             Enable DVB DBS
 
-        menuconfig BR2_PACKAGE_WPEFRAMEWORK_TUNER_ATSC
+        menuconfig BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL_ATSC
+        select BR2_PACKAGE_DVB_APPS
         bool "ATSC"
         help
             Enable ATSC DBS
 
     endchoice
-    menuconfig BR2_PACKAGE_WPEFRAMEWORK_SICONTROL
-        select BR2_PACKAGE_SQLITE
-        select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-        select BR2_PACKAGE_DVB_APPS if BR2_PACKAGE_WPEFRAMEWORK_TUNER_ATSC
-	bool "SICONTROL"
-	help
-	   SI parsing ON OFF plugin
-
-    if BR2_PACKAGE_WPEFRAMEWORK_SICONTROL
-        config BR2_PACKAGE_WPEFRAMEWORK_SICONTROL_AUTOSTART
-        bool "autostart"
-        default n
-    endif
 endif
 
 config BR2_PACKAGE_WPEFRAMEWORK_RPCLINK

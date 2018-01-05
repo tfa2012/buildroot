@@ -618,6 +618,13 @@ if BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
             Enable ATSC DBS
 
     endchoice
+    if BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL_DVB
+        config BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL_ENABLE_BOUQUET_PARSING
+        bool "Enable Bouquet Parsing"
+        help
+            Enable Bouquet Table Parsing
+    endif
+
 endif
 
 config BR2_PACKAGE_WPEFRAMEWORK_RPCLINK

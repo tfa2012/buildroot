@@ -199,6 +199,11 @@ ifeq ($(BR2_PACKAGE_WPEWEBKIT_USE_GOLD_LD),y)
 WPEWEBKIT_FLAGS += -DUSE_LD_GOLD=ON
 endif
 
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)		
+ WPEWEBKIT_SYMBOL_FLAGS += -mthumb -DLINUX -DEGL_API_FB -lOSAL -lgraphics -lampclient		
+ #WPEWEBKIT_DEPENDENCIES += OSAL graphics ampclient		
+endif
+
 WPEWEBKIT_EXTRA_FLAGS += \
 	-DCMAKE_C_FLAGS_RELEASE="$(WPEWEBKIT_SYMBOL_FLAGS) $(WPEWEBKIT_DEBUG_BUILD_FLAGS) -Wno-cast-align" \
 	-DCMAKE_CXX_FLAGS_RELEASE="$(WPEWEBKIT_SYMBOL_FLAGS) $(WPEWEBKIT_DEBUG_BUILD_FLAGS) -Wno-cast-align" \
@@ -278,6 +283,16 @@ define WPEWEBKIT_INSTALL_TARGET_CMDS
 	$(WPEWEBKIT_INSTALL_TARGET_CMDS_WEBKIT))
 endef
 
+endif
+
+WPEWEBKIT_PKGDIR = "$(TOP_DIR)/package/wpe/wpewebkit"		
+define WPEWEBKIT_APPLY_LOCAL_PATCHES		
+	$(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 001_amp_webkit_plugin_apply.patch.conditional;
+	$(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 001_webkit_fix_black_screen_issue.patch.conditional;
+        $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 001_webkit_improvement_for_bg.patch.conditional;
+endef		
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)		
+WPEWEBKIT_POST_PATCH_HOOKS += WPEWEBKIT_APPLY_LOCAL_PATCHES		
 endif
 
 RSYNC_VCS_EXCLUSIONS += --exclude LayoutTests --exclude WebKitBuild

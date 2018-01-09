@@ -3,8 +3,12 @@
 # bluez5_utils
 #
 ################################################################################
-
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
+BLUEZ5_UTILS_VERSION = 5.28
+else
 BLUEZ5_UTILS_VERSION = 5.44
+endif
+
 BLUEZ5_UTILS_SOURCE = bluez-$(BLUEZ5_UTILS_VERSION).tar.xz
 BLUEZ5_UTILS_SITE = $(BR2_KERNEL_MIRROR)/linux/bluetooth
 BLUEZ5_UTILS_INSTALL_STAGING = YES

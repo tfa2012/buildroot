@@ -1,2 +1,13 @@
+config BR2_PACKAGE_HAS_BERLIN
+        bool
+
+config BR2_PACKAGE_PROVIDES_BERLIN
+        depends on BR2_PACKAGE_HAS_BERLIN
+        string
+
 source "package/synaptics/marvell-firmware/Config.in"
 source "package/synaptics/marvell-ampsdk/Config.in"
+source "package/synaptics/gst1-syna-playersinkbin/Config.in"
+source "package/synaptics/gst1-syna-plugin/Config.in"
+source "package/synaptics/gst1-syna-plugin-webkit/Config.in"
+source "package/synaptics/gst1-syna-plugin-ut/Config.in"

@@ -23,7 +23,10 @@ WESTEROS_CONF_OPTS = \
 	--enable-xdgv5=yes\
 	--enable-essos=no 
     
-ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
+        WESTEROS_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -DLINUX -DEGL_API_FB" \
+                        CXXFLAGS="$(TARGET_CXXFLAGS) -DLINUX -DEGL_API_FB"
+else ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
 	WESTEROS_CONF_ENV += CXXFLAGS="$(TARGET_CXXFLAGS) -DWESTEROS_PLATFORM_RPI -DWESTEROS_INVERTED_Y -DBUILD_WAYLAND -I${STAGING_DIR}/usr/include/interface/vmcs_host/linux"
 	WESTEROS_LDFLAGS += -lEGL -lGLESv2 -lbcm_host
 else ifeq ($(BR2_PACKAGE_HAS_NEXUS),y)
@@ -48,6 +51,14 @@ define WESTEROS_RUN_AUTOCONF
 endef
 WESTEROS_PRE_CONFIGURE_HOOKS += WESTEROS_RUN_AUTOCONF
 
+WESTEROS_PKGDIR = "$(TOP_DIR)/package/westeros"
+define WESTEROS_APPLY_LOCAL_PATCHES
+	$(APPLY_PATCHES) $(@D) $(WESTEROS_PKGDIR) 0001-westeros_egl.patch.conditional;
+        $(APPLY_PATCHES) $(@D) $(WESTEROS_PKGDIR) 0001-westeros_enable_1080p_gfx.patch.conditional;
+endef
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
+WESTEROS_POST_PATCH_HOOKS += WESTEROS_APPLY_LOCAL_PATCHES
+endif
 
 define WESTEROS_BUILD_CMDS
 	SCANNER_TOOL=${HOST_DIR}/usr/bin/wayland-scanner \

@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GST1_SYNA_PLUGIN_WEBKIT
+	bool "gst1-syna-plugin-webkit"
+	select BR2_PACKAGE_GST1_PLUGINS_BASE
+	help
+	  GStreamer element for Synaptics
+
+	  https://github.com/thaytan/gst-rpicamsrc

@@ -1,0 +1,13 @@
+diff -uNrp a/Source/WebCore/platform/graphics/gstreamer/mse/AppendPipeline.cpp b/Source/WebCore/platform/graphics/gstreamer/mse/AppendPipeline.cpp
+--- a/Source/WebCore/platform/graphics/gstreamer/mse/AppendPipeline.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/mse/AppendPipeline.cpp
+@@ -1098,6 +1098,9 @@ void AppendPipeline::connectDemuxerSrcPa
+ 
+ void AppendPipeline::disconnectDemuxerSrcPadFromAppsinkFromAnyThread(GstPad* demuxerSrcPad)
+ {
++    // Reset m_track during disconnect demuxer, since it's set when demuxer connecting.
++    m_track = nullptr;
++
+     // Must be done in the thread we were called from (usually streaming thread).
+     if (!gst_pad_is_linked(demuxerSrcPad)) {
+         gulong probeId = GPOINTER_TO_ULONG(g_object_get_data(G_OBJECT(demuxerSrcPad), "blackHoleProbeId"));

@@ -1,0 +1,59 @@
+From 49cd77cc58f6455ecce82f669fea254b1691df1e Mon Sep 17 00:00:00 2001
+From: pradeeps <pradeeps@synaptics.com>
+Date: Fri, 3 Nov 2017 12:10:57 -0700
+Subject: [PATCH] 1080p fix
+
+---
+ src/westeros/WesterosViewbackendOutput.cpp | 4 ++--
+ src/westeros/renderer-backend.cpp          | 4 ++--
+ src/wpeframework/view-backend.cpp          | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/src/westeros/WesterosViewbackendOutput.cpp b/src/westeros/WesterosViewbackendOutput.cpp
+index 4ac4d16..0031a31 100644
+--- a/src/westeros/WesterosViewbackendOutput.cpp
++++ b/src/westeros/WesterosViewbackendOutput.cpp
+@@ -66,8 +66,8 @@ void WesterosViewbackendOutput::handleScaleCallback( void *UserData, int32_t sca
+ WesterosViewbackendOutput::WesterosViewbackendOutput(struct wpe_view_backend* backend)
+  : m_compositor(nullptr)
+  , m_viewbackend(backend)
+- , m_width(800)
+- , m_height(600)
++ , m_width(1920)
++ , m_height(1080)
+  , m_modeDataArray(g_ptr_array_sized_new(4))
+ {
+ }
+diff --git a/src/westeros/renderer-backend.cpp b/src/westeros/renderer-backend.cpp
+index 8c8f44e..5c2f6db 100644
+--- a/src/westeros/renderer-backend.cpp
++++ b/src/westeros/renderer-backend.cpp
+@@ -41,8 +41,8 @@
+ #include <unistd.h>
+ 
+ #define DEFAULT_CARD "/dev/dri/card0"
+-#define DEFAULT_MODE_WIDTH (1280)
+-#define DEFAULT_MODE_HEIGHT (720)
++#define DEFAULT_MODE_WIDTH (1920)
++#define DEFAULT_MODE_HEIGHT (1080)
+ 
+ namespace GBM{
+ 
+diff --git a/src/wpeframework/view-backend.cpp b/src/wpeframework/view-backend.cpp
+index 5f3efd6..1d1ec1e 100644
+--- a/src/wpeframework/view-backend.cpp
++++ b/src/wpeframework/view-backend.cpp
+@@ -32,8 +32,8 @@
+ #include "ipc.h"
+ #include "ipc-buffer.h"
+ 
+-#define WIDTH 1280
+-#define HEIGHT 720
++#define WIDTH 1920
++#define HEIGHT 1080
+ 
+ namespace WPEFramework {
+ 
+-- 
+1.9.1
+

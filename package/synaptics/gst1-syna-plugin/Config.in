@@ -1,0 +1,9 @@
+config BR2_PACKAGE_GST1_SYNA_PLUGIN
+	bool "gst1-syna-plugin"
+	select BR2_PACKAGE_GST1_PLUGINS_BASE
+	select BR2_PACKAGE_FFMPEG
+	select BR2_PACKAGE_FFMPEG_SWSCALE
+	help
+	  GStreamer element for Synaptics
+
+	  https://github.com/thaytan/gst-rpicamsrc

@@ -1,0 +1,82 @@
+From df087e8db8528abb2d0ec2b71f0dbf09526f73e6 Mon Sep 17 00:00:00 2001
+From: pradeeps <pradeeps@synaptics.com>
+Date: Wed, 8 Nov 2017 15:07:23 -0800
+Subject: [PATCH] amp webkit plugin apply
+
+---
+ .../gstreamer/MediaPlayerPrivateGStreamer.cpp      | 27 +++++++++++++++++++++-
+ .../mse/MediaPlayerPrivateGStreamerMSE.cpp         |  6 ++---
+ 2 files changed, 29 insertions(+), 4 deletions(-)
+
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 705a1f0..d403158 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -1973,6 +1973,14 @@ static HashSet<String, ASCIICaseInsensitiveHash>& mimeTypeSet()
+                 set.add(AtomicString("audio/webm"));
+         }
+ 
++        //Synaptics Workaround
++        set.add(AtomicString("video/mp4"));
++        set.add(AtomicString("audio/mp4"));
++        set.add(AtomicString("video/webm"));
++        set.add(AtomicString("video/x-vp8"));
++        set.add(AtomicString("video/x-vp9"));
++        set.add(AtomicString("audio/x-vorbis"));
++
+         gst_plugin_feature_list_free(audioDecoderFactories);
+         gst_plugin_feature_list_free(videoDecoderFactories);
+         gst_plugin_feature_list_free(demuxerFactories);
+@@ -2245,7 +2253,24 @@ void MediaPlayerPrivateGStreamer::createGSTPlayBin()
+     m_videoSink = gst_element_factory_make( "db410csink", "optimized vsink");
+     g_object_set(m_pipeline.get(), "video-sink", m_videoSink.get(), nullptr);
+ #endif    
+-    
++
++// TODO: define new Macro for custom amp audio-sink, refer to "BCM_NEXUS"
++#if USE(WESTEROS_SINK)
++    GstElement* audioSink = gst_element_factory_make("amparen", "AmpAudioSink");
++    g_object_set(m_pipeline.get(), "audio-sink", audioSink, nullptr);
++
++    GRefPtr<GstClock> clk = adoptGRef(gst_element_provide_clock(audioSink));
++    if (clk) {
++        gst_element_set_clock(m_videoSink.get(), clk.get());
++    }
++    /* Native audio */
++    gint playbin_flag;
++    g_object_get (m_pipeline.get(), "flags", &playbin_flag, NULL);
++    playbin_flag |= 0x00000020;
++    g_object_set (m_pipeline.get(), "flags", playbin_flag, NULL);
++#endif
++
++
+ #if !USE(WESTEROS_SINK) && !USE(FUSION_SINK)
+     g_object_set(m_pipeline.get(), "audio-sink", createAudioSink(), nullptr);
+ #endif
+diff --git a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
+index 3893944..1763c2d 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
+@@ -800,7 +800,7 @@ void MediaPlayerPrivateGStreamerMSE::trackDetected(RefPtr<AppendPipeline> append
+ 
+ bool MediaPlayerPrivateGStreamerMSE::supportsCodecs(const String& codecs)
+ {
+-    static Vector<const char*> supportedCodecs = { "avc*", "mp4a*", "mpeg", "x-h264" };
++    static Vector<const char*> supportedCodecs = { "avc*", "mp4a*", "mpeg", "x-h264", "x-vp8", "x-vp9", "x-vorbis" };
+     Vector<String> codecEntries;
+     codecs.split(',', false, codecEntries);
+ 
+@@ -842,8 +842,8 @@ MediaPlayer::SupportsType MediaPlayerPrivateGStreamerMSE::supportsType(const Med
+         return result;
+ 
+     // Disable VPX/Opus on MSE for now, mp4/avc1 seems way more reliable currently.
+-    if (parameters.type.endsWith("webm"))
+-        return result;
++    //if (parameters.type.endsWith("webm"))
++    //    return result;
+ 
+     // YouTube TV provides empty types for some videos and we want to be selected as best media engine for them.
+     if (parameters.type.isEmpty()) {
+-- 
+1.9.1
+

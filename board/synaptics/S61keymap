@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Check for missing binaries
+UDEV_BIN=/sbin/udevd
+test -x $UDEV_BIN || exit 5
+
+case "$1" in
+    start)
+        printf "Generating hwdb.bin keymap for udev "
+        udevadm hwdb --update
+        udevadm trigger
+        udevadm control --reload
+        udevadm settle --timeout=30 || echo "udevadm settle failed"
+        echo "done"
+        ;;
+    stop)
+        # Stop execution of events
+        udevadm control --stop-exec-queue
+        killall udevd
+        ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+
+
+exit 0

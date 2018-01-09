@@ -1,0 +1,12 @@
+diff -uNrp a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -379,7 +379,7 @@ MediaTime MediaPlayerPrivateGStreamer::p
+     gint64 position = GST_CLOCK_TIME_NONE;
+     GstElement* videoDec = nullptr;
+     GstQuery* query = gst_query_new_position(GST_FORMAT_TIME);
+-#if USE(FUSION_SINK)
++#if USE(FUSION_SINK) || USE(WESTEROS_SINK)
+     g_object_get(m_pipeline.get(), "video-sink", &videoDec, nullptr);
+     if (!GST_IS_ELEMENT(videoDec))
+         return MediaTime::zeroTime();

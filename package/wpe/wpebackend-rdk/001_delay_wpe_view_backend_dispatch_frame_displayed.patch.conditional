@@ -1,0 +1,30 @@
+diff --git a/src/wpeframework/view-backend.cpp b/src/wpeframework/view-backend.cpp
+index 5f3efd6..503f1f0 100644
+--- a/src/wpeframework/view-backend.cpp
++++ b/src/wpeframework/view-backend.cpp
+@@ -26,6 +26,7 @@
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++#include <sys/time.h>
+ #include <wpe/input.h>
+ #include <wpe/view-backend.h>
+ #include "display.h"
+@@ -115,7 +116,17 @@ void ViewBackend::ackBufferCommit()
+     IPC::FrameComplete::construct(message);
+     ipcHost.sendMessage(IPC::Message::data(message), IPC::Message::size);
+ 
++    //delay atleast 20ms(60fps=17ms) between updates.
++    static timeval start_t, end_t;
++    double secs = 0.;
++    gettimeofday(&end_t, NULL);
++    secs = (double)(end_t.tv_usec - start_t.tv_usec) / 1000000 + (double)(end_t.tv_sec - start_t.tv_sec);
++    //fprintf(stderr, "DEBUG: %s %d diff=%f\n", __FUNCTION__, __LINE__, secs);
++    if(secs < 0.040){
++        usleep((0.040-secs)*1000*1000);
++    }
+     wpe_view_backend_dispatch_frame_displayed(backend);
++    gettimeofday(&start_t, NULL);
+ }
+ 
+ } // namespace WPEFramework

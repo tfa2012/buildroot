@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GST1_SYNA_PLAYERSINKBIN
+	bool "gst1-syna-playersinkbin"
+	select BR2_PACKAGE_GST1_PLUGINS_BASE
+	help
+	  GStreamer element for Synaptics
+
+	  https://github.com/thaytan/gst-rpicamsrc

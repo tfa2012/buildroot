@@ -1,0 +1,37 @@
+#!/bin/sh
+
+start() {
+	echo -n "Starting Westeros: "
+        export XDG_RUNTIME_DIR=/tmp
+        export LD_PRELOAD=libwesteros_gl.so.0.0.0
+	start-stop-daemon -S -q -b -m -p /var/run/Westeros.pid --exec /usr/bin/westeros -- --renderer libwesteros_render_gl.so.0.0.0 --framerate 60 --display wayland-0 </dev/null >/dev/null 2>&1
+	[ $? == 0 ] && echo "OK" || echo "FAIL"
+}
+stop() {
+	echo -n "Stopping Westeros: "
+	start-stop-daemon -K -q -p /var/run/Westeros.pid
+	[ $? == 0 ] && echo "OK" || echo "FAIL"
+	rm -rf /var/run/Westeros.pid
+}
+restart() {
+	stop
+	sleep 3
+	start
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|reload)
+		restart
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
+
+exit $?

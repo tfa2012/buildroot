@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEMS=="input", RUN+="/usr/bin/curl -vvv -XPUT http://127.0.0.1:80/Service/RemoteControl/LinuxDevice/PairingMode"
+

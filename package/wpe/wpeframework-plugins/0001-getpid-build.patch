@@ -1,0 +1,13 @@
+diff --git a/Compositor/lib/Wayland/Client/Client.h b/Compositor/lib/Wayland/Client/Client.h
+index 0166794..91fec72 100644
+--- a/Compositor/lib/Wayland/Client/Client.h
++++ b/Compositor/lib/Wayland/Client/Client.h
+@@ -660,7 +660,7 @@ namespace Wayland {
+                 }
+                 else {
+                     _keyboardReceiver = index->second;
+-                    printf("%s:%d PID=%d enabled keyboard input _keyboardReceiver=%p\n", __FILE__, __LINE__, getpid(), _keyboardReceiver);
++                    //printf("%s:%d PID=%d enabled keyboard input _keyboardReceiver=%p\n", __FILE__, __LINE__, getpid(), _keyboardReceiver);
+                 }
+             }
+             _adminLock.Unlock();

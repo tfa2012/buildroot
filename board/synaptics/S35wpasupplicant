@@ -1,0 +1,39 @@
+#!/bin/sh
+
+start() {
+	echo -n "Starting WPA Supplicant: "
+	echo 0 > /proc/sys/net/ipv6/conf/wlan0/accept_ra
+	echo 0 > /proc/sys/net/ipv6/conf/wlan0/autoconf
+	echo 1 >  /proc/sys/net/ipv6/conf/wlan0/disable_ipv6
+	start-stop-daemon -S -q -b -m -p /var/run/WPASupplicant.pid --exec /usr/sbin/wpa_supplicant -- -iwlan0 -W -c/etc/wpa_supplicant/wpa_supplicant-wlan0.conf 2>&1
+	sleep 2
+	[ $? == 0 ] && echo "OK" || echo "FAIL"
+}
+stop() {
+	echo -n "Stopping WPA Supplicant: "
+	start-stop-daemon -K -q -p /var/run/WPASupplicant.pid
+	[ $? == 0 ] && echo "OK" || echo "FAIL"
+	rm -rf /var/run/WPASupplicant.pid
+}
+restart() {
+	stop
+	sleep 3
+	start
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|reload)
+		restart
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
+
+exit $?

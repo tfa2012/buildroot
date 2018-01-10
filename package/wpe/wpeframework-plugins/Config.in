@@ -589,8 +589,6 @@ config BR2_PACKAGE_WPEFRAMEWORK_POWER_GPIOTYPE
 
 endif
 
-comment "External plugins below"
-     Tuner Plugin
 config BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
     select BR2_PACKAGE_SQLITE
@@ -662,8 +660,4 @@ if BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
 
 endif
 
-config BR2_PACKAGE_WPEFRAMEWORK_RPCLINK
-    select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-    bool "RPC link server"
-    help
-      Plugin adding an RPC server to act as a server itself
+comment "External plugins below"

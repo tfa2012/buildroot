@@ -12,7 +12,7 @@ start() {
 		ln -sfn /etc/playready /root/Netflix/dpi/playready
 	fi
 	mount -a
-	export TZ=$(wget -qO- http://jsonip.metrological.com/ | sed -e 's/^.*"tz":"\([^"]*\)".*$/\1/')
+	export TZ=$(wget -qO- http://ip-api.com/json/ | sed -e 's/^.*"tz":"\([^"]*\)".*$/\1/')
     
     # needed for wayland/westeros/weston
     export XDG_RUNTIME_DIR=/tmp

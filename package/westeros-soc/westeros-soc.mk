@@ -18,7 +18,11 @@ WESTEROS_SOC_CONF_OPTS += \
     --disable-silent-rules \
     --disable-dependency-tracking \
 
-ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
+	WESTEROS_SOC_CONF_OPTS += CFLAGS="$(TARGET_CFLAGS) -DLINUX -DEGL_API_FB" \
+			CXXFLAGS="$(TARGET_CXXFLAGS) -DLINUX -DEGL_API_FB"
+	WESTEROS_SOC_SUBDIR = syna
+else ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
 	WESTEROS_SOC_CONF_OPTS += CFLAGS="$(TARGET_CFLAGS) -I ${STAGING_DIR}/usr/include/interface/vmcs_host/linux/"
 	WESTEROS_SOC_SUBDIR = rpi
 else ifeq ($(BR2_PACKAGE_HAS_NEXUS),y)

@@ -6,7 +6,6 @@ start() {
         modprobe gal3d
 	start-stop-daemon -S -q -b -m -p /var/run/AMPService.pid --exec /usr/bin/ampservice -- </dev/null >/dev/null 2>&1
 	[ $? == 0 ] && echo "OK" || echo "FAIL"
-	test_disp hdcp disable
 }
 stop() {
 	echo -n "Stopping AMPService: "

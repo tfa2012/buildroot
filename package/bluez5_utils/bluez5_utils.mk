@@ -82,6 +82,14 @@ else
 BLUEZ5_UTILS_CONF_OPTS += --disable-systemd
 endif
 
+BLUEZ5_UTILS_PKGDIR = "$(TOP_DIR)/package/bluez5_utils"
+define BLUEZ5_UTILS_APPLY_LOCAL_PATCHES
+        $(APPLY_PATCHES) $(@D) $(BLUEZ5_UTILS_PKGDIR) 0001-tools-bneptest.c-Remove-include-linux-if_bridge.h-to.patch.conditional;
+endef
+ifneq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
+BLUEZ5_UTILS_POST_PATCH_HOOKS += BLUEZ5_UTILS_APPLY_LOCAL_PATCHES
+endif
+
 define BLUEZ5_UTILS_INSTALL_INIT_SYSTEMD
 	mkdir -p $(TARGET_DIR)/etc/systemd/system/bluetooth.target.wants
 	ln -fs ../../../../usr/lib/systemd/system/bluetooth.service \

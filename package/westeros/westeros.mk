@@ -21,7 +21,8 @@ WESTEROS_CONF_OPTS = \
 	--enable-rendergl=yes \
 	--enable-sbprotocol=yes \
 	--enable-xdgv5=yes\
-	--enable-essos=no 
+	--enable-essos=no \
+	--enable-player=yes
     
 ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
         WESTEROS_CONF_ENV += CFLAGS="$(TARGET_CFLAGS) -DLINUX -DEGL_API_FB" \

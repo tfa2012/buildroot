@@ -41,9 +41,24 @@ define WESTEROS_SINK_RUN_AUTOCONF
 endef
 WESTEROS_SINK_PRE_CONFIGURE_HOOKS += WESTEROS_SINK_RUN_AUTOCONF
 
-define WESTEROS_SINK_ENTER_BUILD_DIR
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
+ define WESTEROS_SINK_ENTER_BUILD_DIR
+	cd $(@D)/$(WESTEROS_SINK_SUBDIR)
+ endef
+else 
+ define WESTEROS_SINK_ENTER_BUILD_DIR
 	cd $(@D)/$(WESTEROS_SINK_SUBDIR) && ln -sf ../../westeros-sink/westeros-sink.c && ln -sf ../../westeros-sink/westeros-sink.h
-endef
+ endef
+endif
 WESTEROS_SINK_PRE_BUILD_HOOKS += WESTEROS_SINK_ENTER_BUILD_DIR
+
+ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
+ WESTEROS_SINK_PKGDIR = "$(TOP_DIR)/package/westeros-sink"
+ define WESTEROS_SINK_APPLY_LOCAL_PATCHES
+  $(APPLY_PATCHES) $(@D) $(WESTEROS_SINK_PKGDIR) 0001-synaptics_support.patch.conditional;
+ endef
+ WESTEROS_SINK_POST_PATCH_HOOKS += WESTEROS_SINK_APPLY_LOCAL_PATCHES
+endif
+ 
 
 $(eval $(autotools-package))

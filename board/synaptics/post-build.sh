@@ -15,8 +15,8 @@ cp -pf "${BOARD_DIR}/S42udhcpc-eth0" "${TARGET_DIR}/etc/init.d/"
 cp -pf "${BOARD_DIR}/S60ampservice" "${TARGET_DIR}/etc/init.d/"
 cp -pf "${BOARD_DIR}/S61keymap" "${TARGET_DIR}/etc/init.d/"
 cp -pf "${BOARD_DIR}/S62avsettings" "${TARGET_DIR}/etc/init.d/"
+cp -pf "${BOARD_DIR}/S63hdcp" "${TARGET_DIR}/etc/init.d/"
 cp -pf "${BOARD_DIR}/S65bluetoothd" "${TARGET_DIR}/etc/init.d/"
-cp -pf "${BOARD_DIR}/S81hdcp" "${TARGET_DIR}/etc/init.d/"
 
 
 mkdir -p "${TARGET_DIR}/etc/bluetooth/"

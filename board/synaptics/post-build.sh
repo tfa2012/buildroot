@@ -47,6 +47,3 @@ sed -i '/XDG_RUNTIME_DIR/a export EGL_MVGFX_H=1080' "${TARGET_DIR}/etc/init.d/S8
 sed -i '/XDG_RUNTIME_DIR/a export EGL_MVGFX_W=1920' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 
 mkdir -p "${TARGET_DIR}/usr/bin"
-cp -pf "${BOARD_DIR}/wpe_ampsamples_plugin_start.sh" "${TARGET_DIR}/usr/bin"
-cp -pf "${BOARD_DIR}/wpe_ampsamples_plugin_stop.sh" "${TARGET_DIR}/usr/bin"
-

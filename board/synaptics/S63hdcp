@@ -1,22 +1,18 @@
 #!/bin/sh      
 #              
-# Start logging
+# Synaptic: enable/disable hdcp service
 #              
                
-SYSLOGD_ARGS=-n                                      
-KLOGD_ARGS=-n                                        
-[ -r /etc/default/logging ] && . /etc/default/logging
-                                   
 start() {                                                                                          
-        printf "Disable hdcp: "                                                                
+        echo -n "Disable hdcp: "                                                                
         test_disp hdcp disable
-        echo "OK"
+        [ $? == 0 ] && echo "OK" || echo "FAIL"
 }       
                                    
 stop() {                                               
-        printf "Stopping logging: "                    
+        echo -n "Enable hdcp: "                    
         test_disp hdcp enable
-        echo "OK"
+        [ $? == 0 ] && echo "OK" || echo "FAIL"
 }           
             
 case "$1" in 

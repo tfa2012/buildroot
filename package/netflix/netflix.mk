@@ -138,10 +138,12 @@ NETFLIX_DEPENDENCIES += libgles libegl
 else ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
 ifeq ($(BR2_PACKAGE_WESTEROS)$(BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR),yy)
 NETFLIX_CONF_OPTS += \
-        -DGIBBON_GRAPHICS=wpeframework
+        -DGIBBON_GRAPHICS=wpeframework \
+        -DGST_VIDEO_RENDERING=synaptics
 else ifeq ($(BR2_PACKAGE_WESTEROS),y)
 NETFLIX_CONF_OPTS += \
-	-DGIBBON_GRAPHICS=wayland-egl
+	-DGIBBON_GRAPHICS=wayland-egl \
+        -DGST_VIDEO_RENDERING=synaptics
 else
 NETFLIX_CONF_OPTS += \
         -DGIBBON_GRAPHICS=wayland-egl \

@@ -42,8 +42,10 @@ cp -pf "${BOARD_DIR}/wpa_supplicant.conf" "${TARGET_DIR}/etc/wpa_supplicant/wpa_
 # Add LD_PRELOAD variable to WPEFramework script
 sed -i '/LD_PRELOAD/d' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 sed -i '/EGL_MVGFX/d' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
+sed -i '/LD_LIBRARY_PATH/d' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 sed -i '/XDG_RUNTIME_DIR/a export LD_PRELOAD=libwesteros_gl.so.0.0.0' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 sed -i '/XDG_RUNTIME_DIR/a export EGL_MVGFX_H=1080' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 sed -i '/XDG_RUNTIME_DIR/a export EGL_MVGFX_W=1920' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
+sed -i '/XDG_RUNTIME_DIR/a export LD_LIBRARY_PATH=/usr/lib/gstreamer-1.0:$LD_LIBRARY_PATH' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 
 mkdir -p "${TARGET_DIR}/usr/bin"

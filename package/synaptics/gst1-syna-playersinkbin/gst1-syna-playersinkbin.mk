@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-GST1_SYNA_PLAYERSINKBIN_VERSION = 4ec3567442687c05bd23c3ae0650d4b9b2042804
+GST1_SYNA_PLAYERSINKBIN_VERSION = 08c3c2f2d130fe0795bb85630b3313098dc3cbef
 GST1_SYNA_PLAYERSINKBIN_SITE_METHOD = git
 GST1_SYNA_PLAYERSINKBIN_SITE = git@github.com:Metrological/synaptics-sdk.git
 GST1_SYNA_PLAYERSINKBIN_SUBDIR = components/vendor/synaptics/gst/playbin

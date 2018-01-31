@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-MARVELL_FIRMWARE_VERSION = 6a931a1021cb3a154e3e4a5cca71b8f96ae221ee
+MARVELL_FIRMWARE_VERSION = b9a220c9f4c03a404362a5414fbf1e2db101c5d5
 MARVELL_FIRMWARE_SITE_METHOD = git
 MARVELL_FIRMWARE_SITE = git@github.com:Metrological/marvell-firmware.git
 
@@ -29,10 +29,19 @@ endef
 endif
 
 define MARVELL_FIRMWARE_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 755 -d $(TARGET_DIR)/usr/lib
-	
-	$(INSTALL) -D -m 644 $(@D)/runtime/linux-gtb/data/rootfs_gtb/lib/liblog.so $(TARGET_DIR)/usr/lib
+    $(INSTALL) -m 755 -d $(TARGET_DIR)/usr/lib
     $(call MARVELL_FIRMWARE_INSTALL_GFX_LIBS,$(TARGET_DIR))
+
+    rm -rf $(BINARIES_DIR)/eMMCimg
+    cp -rapf $(@D)/prebuilt/eMMCimg $(BINARIES_DIR)/eMMCimg
+
+    rm -rf $(TARGET_DIR)/lib/modules
+    $(INSTALL) -m 755 -d $(TARGET_DIR)/lib/modules
+    cp -rapf $(@D)/prebuilt/modules/* $(TARGET_DIR)/lib/modules
+
+    rm -rf $(TARGET_DIR)/lib/firmware
+    $(INSTALL) -m 755 -d $(TARGET_DIR)/lib/firmware
+    cp -rapf $(@D)/prebuilt/firmware/* $(TARGET_DIR)/lib/firmware
 endef
 
 define MARVELL_FIRMWARE_INSTALL_STAGING_CMDS
@@ -41,7 +50,6 @@ define MARVELL_FIRMWARE_INSTALL_STAGING_CMDS
 	$(INSTALL) -m 755 -d $(STAGING_DIR)/usr/include
 	
 
-	$(INSTALL) -D -m 644 $(@D)/runtime/linux-gtb/data/rootfs_gtb/lib/liblog.so $(STAGING_DIR)/usr/lib
     $(call MARVELL_FIRMWARE_INSTALL_GFX_LIBS,$(STAGING_DIR))
     $(call MARVELL_FIRMWARE_INSTALL_GFX_DEV,$(STAGING_DIR))
 endef

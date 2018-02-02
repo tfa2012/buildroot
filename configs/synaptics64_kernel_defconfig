@@ -14,6 +14,6 @@ BR2_LINUX_KERNEL=y
 BR2_LINUX_KERNEL_CUSTOM_GIT=y
 BR2_LINUX_KERNEL_CUSTOM_REPO_URL="git@github.com:Metrological/marvell-linux.git"
 BR2_LINUX_KERNEL_CUSTOM_REPO_VERSION="4.1.43"
-BR2_LINUX_KERNEL_DEFCONFIG="berlin4cdp_defconfig"
+BR2_LINUX_KERNEL_DEFCONFIG="berlin4cdp"
 BR2_LINUX_KERNEL_DTS_SUPPORT=y
 BR2_LINUX_KERNEL_INTREE_DTS_NAME="marvell/berlin4cdp-a0-stb-2g-tz marvell/berlin4cdp-a0-stb-2g-tz-factory marvell/berlin4cdp-a0-stb-2g-tz-recovery"

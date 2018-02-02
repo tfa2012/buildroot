@@ -1,0 +1,56 @@
+diff --git a/partner/graphics/gles2/OpenGLContextEGL.cpp b/partner/graphics/gles2/OpenGLContextEGL.cpp
+index 696ab5b..ac48fc9 100644
+--- a/partner/graphics/gles2/OpenGLContextEGL.cpp
++++ b/partner/graphics/gles2/OpenGLContextEGL.cpp
+@@ -39,7 +39,8 @@ bool OpenGLContext::init(OpenGLContext* share)
+         EGLint majorVersion;
+         EGLint minorVersion;
+ 
+-        mPrivate->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
++        mPrivate->native_display = fbGetDisplay(NULL);
++        mPrivate->display = eglGetDisplay((NativeDisplayType)mPrivate->native_display);
+         assert(mPrivate->display != EGL_NO_DISPLAY);
+ 
+         EGLint result;
+@@ -112,12 +113,13 @@ bool OpenGLContext::init(OpenGLContext* share)
+                                          << " D=" << depthSize
+                                          << " S=" << stencilSize;
+ 
+-        mPrivate->surface = eglCreateWindowSurface(mPrivate->display, mPrivate->config, 0, 0);
++        mPrivate->native_window = fbCreateWindow(mPrivate->native_display, 0, 0, 1280, 720);
++        mPrivate->surface = eglCreateWindowSurface(mPrivate->display, mPrivate->config, mPrivate->native_window, 0);
+ 
+         assert(EGL_NO_SURFACE != mPrivate->surface);
+ 
+-        int width;
+-        int height;
++        EGLint width;
++        EGLint height;
+ 
+         eglQuerySurface(mPrivate->display, mPrivate->surface, EGL_WIDTH, &width);
+         eglQuerySurface(mPrivate->display, mPrivate->surface, EGL_HEIGHT, &height);
+diff --git a/partner/graphics/gles2/OpenGLContextEGL.h b/partner/graphics/gles2/OpenGLContextEGL.h
+index 9ad4691..4c4c63f 100644
+--- a/partner/graphics/gles2/OpenGLContextEGL.h
++++ b/partner/graphics/gles2/OpenGLContextEGL.h
+@@ -25,6 +25,8 @@ public:
+         PbContext
+     } type;
+ 
++    void *native_window = NULL;
++    NativeDisplayType native_display;
+     EGLDisplay display;
+     EGLConfig config;
+     EGLContext context;
+diff --git a/partner/graphics/gles2/gibbon_graphics.cmake b/partner/graphics/gles2/gibbon_graphics.cmake
+index 4c6a5e7..5e8a16e 100644
+--- a/partner/graphics/gles2/gibbon_graphics.cmake
++++ b/partner/graphics/gles2/gibbon_graphics.cmake
+@@ -100,6 +100,7 @@ elseif(GIBBON_GRAPHICS_GL_WSYS STREQUAL "egl")
+     set(GIBBON_GRAPHICSENGINE_GLES2_EGL TRUE)
+     gibbon_add_libraries(GLESv2 EGL)
+     add_definitions(-DMESA_EGL_NO_X11_HEADERS)
++    add_definitions(-DEGL_EGLEXT_PROTOTYPES=1)
+ elseif(GIBBON_GRAPHICS_GL_WSYS STREQUAL "osx")
+     gibbon_add_sources(OpenGLContextOSX.mm)
+ 

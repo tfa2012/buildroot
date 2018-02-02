@@ -1,0 +1,7 @@
+config BR2_PACKAGE_GST1_SYNA_VIDEOSINK
+	bool "gst1-syna-videosink"
+	select BR2_PACKAGE_GST1_PLUGINS_BASE
+	help
+	  GStreamer video sink element for Synaptics
+
+	  https://github.com/thaytan/gst-rpicamsrc

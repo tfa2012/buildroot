@@ -268,6 +268,7 @@ endif
 NETFLIX_PKGDIR = "$(TOP_DIR)/package/netflix"
 define NETFLIX_APPLY_LOCAL_PATCHES
   $(APPLY_PATCHES) $(@D) $(NETFLIX_PKGDIR) 0001-synaptics_gles2.patch.conditional;
+  $(APPLY_PATCHES) $(@D) $(NETFLIX_PKGDIR) 0002-synaptics_crash.patch.conditional;
 endef
 ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
 NETFLIX_POST_PATCH_HOOKS += NETFLIX_APPLY_LOCAL_PATCHES

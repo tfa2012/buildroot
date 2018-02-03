@@ -1,0 +1,27 @@
+diff --git a/partner/dpi/gstreamer/ESPlayerGst.cpp b/partner/dpi/gstreamer/ESPlayerGst.cpp
+index b425d59..83db0d1 100644
+--- a/partner/dpi/gstreamer/ESPlayerGst.cpp
++++ b/partner/dpi/gstreamer/ESPlayerGst.cpp
+@@ -364,6 +364,9 @@ void ESPlayerGst::flush()
+ {
+   // buffer push shouldn't happen because of the above mutex
+   Log::info(TRACE_MEDIACONTROL, "flushing pipeline...");
++
++  gst_element_set_state (mSrc, GST_STATE_NULL);
++
+   GstEvent* flush_start = gst_event_new_flush_start();
+   gboolean ret = FALSE;
+   ret = gst_element_send_event(mSrc, flush_start);
+diff --git a/partner/graphics/wpeframework/OpenGLContextEGL.cpp b/partner/graphics/wpeframework/OpenGLContextEGL.cpp
+index 9b4aec1..20cda67 100644
+--- a/partner/graphics/wpeframework/OpenGLContextEGL.cpp
++++ b/partner/graphics/wpeframework/OpenGLContextEGL.cpp
+@@ -57,7 +57,7 @@ bool OpenGLContext::init(OpenGLContext* share)
+ {
+     mPrivate = new OpenGLContextPrivate;
+ 
+-    assert(WPEFramework::Display::Instance().GetDisplay() != EGL_NO_DISPLAY);
++    assert(WPEFramework::Display::Instance().WaylandDisplay().GetDisplay() != EGL_NO_DISPLAY);
+ 
+     mWidth =  mPrivate->client.Width();
+     mHeight =  mPrivate->client.Height();

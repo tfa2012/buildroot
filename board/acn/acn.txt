@@ -4,9 +4,6 @@ WPEDatabaseProcess
 WPEStorageProcess
 WPEFramework
 WPEProcess
-rpcbind
-rpcinfo
-netconfig
 gst-plugin-scanner
 gst-inspect-1.0
 gst-launch-1.0
@@ -124,7 +121,7 @@ libWPEFrameworkTracing.so
 libWPEFrameworkVirtualInput.so
 libWPEFrameworkTimeSync.so
 libWPEFrameworkWebShell.so
-libWPEFrameworkOpenCDMi.so
+libWPEFrameworkOCDM.so
 libnxclient.so
 libWPEBackend.so
 libWPEBackend-rdk.so
@@ -139,5 +136,4 @@ libbrcmvideosink.so
 libbrcmvidfilter.so
 libgstmatroska.so
 libgstopus.so
-libtirpc.so
 libopus.so

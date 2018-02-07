@@ -39,7 +39,6 @@ metrological)
 		ln -s $SOURCE/usr/share/fonts $DESTINATION/share/fonts
 		ln -s $SOURCE/etc/ssl $DESTINATION/etc/ssl
 		ln -s $SOURCE/etc/ssl $DESTINATION/lib/ssl
-		ln -s $SOURCE/etc/netconfig $DESTINATION/etc/netconfig
 		ln -s $SOURCE/etc/fonts $DESTINATION/etc/fonts
 		ln -s $SOURCE/etc/WPEFramework $DESTINATION/etc/WPEFramework
 		ln -s $SOURCE/usr/lib/gio $DESTINATION/lib/gio
@@ -65,30 +64,11 @@ metrological)
 ;;
 
 *)
-	# Workaround for rpcbind, it needs to have this netconfig file
-	export DESTINATION=/hdd/acn
-	if [ ! -d $DESTINATION ]; then
-		mkdir -p $DESTINATION/etc
-		cp -rfap /etc/* $DESTINATION/etc
-		ln -s $SOURCE/etc/netconfig $DESTINATION/etc/netconfig
-	fi
-
 	grep -q "/opt/wpe ext4" /proc/mounts && 
 		echo "/opt/wpe is already mounted" || mount -t ext4 --bind /hdd/metrological /opt/wpe
-	grep -q "/etc/ ext4" /proc/mounts && 
-		echo "/etc/ is already mounted" || mount -t ext4 --bind $DESTINATION/etc/ /etc/
 	grep -q "/usr/lib/gio ext4" /proc/mounts &&
 		echo "/usr/lib/gio is already mounted" || mount -t ext4 --bind $SOURCE/usr/lib/gio /usr/lib/gio
 	
-	#launch rpcbind to create channel between framework and webkit
-	ext=`pidof rpcbind`
-	if [ ! $ext ]; then
-    		echo "Launching rpcbind ..."
-		rpcbind 
-	else
-    		echo "rpcbind is already launched..."
-	fi	
-
 	cd /usr/bin/netflix	
 	LD_PRELOAD=$SOURCE/lib/libstdc\+\+.so.6.0.21 WPEFramework -c $SOURCE/etc/WPEFramework/config.json 	
 ;;

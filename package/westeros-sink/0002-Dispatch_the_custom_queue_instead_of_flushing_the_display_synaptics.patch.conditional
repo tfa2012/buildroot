@@ -46,11 +46,11 @@ diff -Naur a/syna/westeros-sink/westeros-sink.c b/syna/westeros-sink/westeros-si
              sink->srcWidth= sink->windowWidth;
              sink->srcHeight= sink->windowHeight;
           }
-@@ -693,7 +693,9 @@
+@@ -693,7 +693,10 @@
                 {
                    wl_vpc_surface_set_geometry( sink->vpcSurface, sink->windowX, sink->windowY, sink->windowWidth, sink->windowHeight );
                 }
--               wl_display_flush( sink->display );
+                wl_display_flush( sink->display );
 +               
 +               wl_display_dispatch_queue( sink->display, sink->queue );
 +               

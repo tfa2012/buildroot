@@ -53,30 +53,6 @@ index 705a1f0..d403158 100644
  #if !USE(WESTEROS_SINK) && !USE(FUSION_SINK)
      g_object_set(m_pipeline.get(), "audio-sink", createAudioSink(), nullptr);
  #endif
-diff --git a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
-index 3893944..1763c2d 100644
---- a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
-+++ b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
-@@ -800,7 +800,7 @@ void MediaPlayerPrivateGStreamerMSE::trackDetected(RefPtr<AppendPipeline> append
- 
- bool MediaPlayerPrivateGStreamerMSE::supportsCodecs(const String& codecs)
- {
--    static Vector<const char*> supportedCodecs = { "avc*", "mp4a*", "mpeg", "x-h264" };
-+    static Vector<const char*> supportedCodecs = { "avc*", "mp4a*", "mpeg", "x-h264", "x-vp8", "x-vp9", "x-vorbis" };
-     Vector<String> codecEntries;
-     codecs.split(',', false, codecEntries);
- 
-@@ -842,8 +842,8 @@ MediaPlayer::SupportsType MediaPlayerPrivateGStreamerMSE::supportsType(const Med
-         return result;
- 
-     // Disable VPX/Opus on MSE for now, mp4/avc1 seems way more reliable currently.
--    if (parameters.type.endsWith("webm"))
--        return result;
-+    //if (parameters.type.endsWith("webm"))
-+    //    return result;
- 
-     // YouTube TV provides empty types for some videos and we want to be selected as best media engine for them.
-     if (parameters.type.isEmpty()) {
 -- 
 1.9.1
 

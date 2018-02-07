@@ -288,7 +288,8 @@ endif
 WPEWEBKIT_PKGDIR = "$(TOP_DIR)/package/wpe/wpewebkit"		
 define WPEWEBKIT_APPLY_LOCAL_PATCHES		
 	$(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 001_amp_webkit_plugin_apply.patch.conditional;
-	$(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 001_webkit_fix_black_screen_issue.patch.conditional;
+#   $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 001_webkit_fix_black_screen_issue.patch.conditional; not needed any more since m_parser will be reset by the official code now.
+	$(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 0003_add_WETEROS_SINK_define_to_MSE.patch.conditional;
         $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 001_webkit_improvement_for_bg.patch.conditional;
 endef		
 ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)		

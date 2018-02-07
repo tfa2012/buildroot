@@ -1,0 +1,11 @@
+--- a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp	2018-02-07 13:14:37.567448552 +0100
++++ b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp	2018-02-07 13:14:29.227287656 +0100
+@@ -792,7 +792,7 @@
+         MediaPlayerPrivateGStreamerBase::initializeGStreamerAndRegisterWebKitElements();
+         HashSet<AtomicString> set;
+ 
+-#if PLATFORM(BCM_NEXUS) || PLATFORM(BROADCOM)
++#if PLATFORM(BCM_NEXUS) || PLATFORM(BROADCOM) || USE(WESTEROS_SINK)
+         GList* audioDecoderFactories = gst_element_factory_list_get_elements(GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, GST_RANK_MARGINAL);
+         GList* videoDecoderFactories = gst_element_factory_list_get_elements(GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO, GST_RANK_MARGINAL);
+ #else

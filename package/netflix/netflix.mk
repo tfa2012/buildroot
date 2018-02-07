@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-NETFLIX_VERSION = d41c1d7b1c0ade5aa5e5a74ce0250e4c21fec8c1
+NETFLIX_VERSION = 5d9aa3c12ecba621a02202067db963abc947c657
 NETFLIX_SITE = git@github.com:Metrological/netflix.git
 NETFLIX_SITE_METHOD = git
 NETFLIX_LICENSE = PROPRIETARY
@@ -267,7 +267,6 @@ endif
 
 NETFLIX_PKGDIR = "$(TOP_DIR)/package/netflix"
 define NETFLIX_APPLY_LOCAL_PATCHES
-  $(APPLY_PATCHES) $(@D) $(NETFLIX_PKGDIR) 0001-synaptics_gles2.patch.conditional;
   $(APPLY_PATCHES) $(@D) $(NETFLIX_PKGDIR) 0002-synaptics_crash.patch.conditional;
 endef
 ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)

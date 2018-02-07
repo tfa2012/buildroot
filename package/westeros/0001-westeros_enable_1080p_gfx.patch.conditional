@@ -58,20 +58,7 @@ index a303df7..517ce0d 100644
  
 diff --git a/westeros-test.cpp b/westeros-test.cpp
 index fbd9076..171cc76 100644
---- a/westeros-test.cpp
-+++ b/westeros-test.cpp
-@@ -837,8 +837,8 @@ static void processInputMain( AppCtx *ctx, uint32_t sym )
-          wl_simple_shell_get_surfaces( ctx->shell );
-          break;
-       case XKB_KEY_r:
--         ctx->planeWidth= (ctx->planeWidth == 1280) ? 640 : 1280;
--         ctx->planeHeight= (ctx->planeHeight == 720) ? 360 : 720;
-+         ctx->planeWidth= (ctx->planeWidth == 1920) ? 640 : 1920;
-+         ctx->planeHeight= (ctx->planeHeight == 1080) ? 360 : 1080;
-          printf("resize egl window to (%d,%d)\n", ctx->planeWidth, ctx->planeHeight );
-          resizeSurface( ctx, 0, 0, ctx->planeWidth, ctx->planeHeight);
-          break;
-@@ -1032,16 +1032,16 @@ int main( int argc, char** argv)
+@@ -1032,8 +1032,8 @@ int main( int argc, char** argv)
     ctx.registry= registry;
     ctx.planeX= 0;
     ctx.planeY= 0;
@@ -82,13 +69,3 @@ index fbd9076..171cc76 100644
     wl_registry_add_listener(registry, &registryListener, &ctx);
     
     wl_display_roundtrip(ctx.display);
-    
-    setupEGL(&ctx);
- 
--   ctx.surfaceWidth= 1280;
--   ctx.surfaceHeight= 720;
-+   ctx.surfaceWidth= 1920;
-+   ctx.surfaceHeight= 1080;
-    ctx.surfaceX= 0;
-    ctx.surfaceY= 0;
- 

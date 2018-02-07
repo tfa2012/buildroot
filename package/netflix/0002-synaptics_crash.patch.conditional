@@ -1,27 +1,306 @@
+From ac27ea472f7c8fc6a0dad6b60ab9627054227076 Mon Sep 17 00:00:00 2001
+From: pradeeps <pradeeps@synaptics.com>
+Date: Wed, 7 Feb 2018 12:55:30 -0800
+Subject: [PATCH] fix deadlock issue with synaptics platform
+
+---
+ partner/dpi/gstreamer/ESPlayerGst.cpp         | 22 +++----
+ partner/dpi/gstreamer/ESPlayerGst.h           |  2 +-
+ partner/dpi/gstreamer/PlaybackGroupNative.cpp | 88 +++++++++++++++++----------
+ partner/dpi/gstreamer/PlaybackGroupNative.h   |  4 +-
+ 4 files changed, 72 insertions(+), 44 deletions(-)
+
 diff --git a/partner/dpi/gstreamer/ESPlayerGst.cpp b/partner/dpi/gstreamer/ESPlayerGst.cpp
-index b425d59..83db0d1 100644
+index 753d193..9ba4e76 100644
 --- a/partner/dpi/gstreamer/ESPlayerGst.cpp
 +++ b/partner/dpi/gstreamer/ESPlayerGst.cpp
-@@ -364,6 +364,9 @@ void ESPlayerGst::flush()
+@@ -84,9 +84,9 @@ unsigned int ESPlayerGst::ProcessFrame() {
+       // Check if any access-unit data is available to decode.
+       switch(mCallback->getNextMediaSample(*mSampleWriter)) {
+          case NO_AVAILABLE_SAMPLES: {  // should report underflow and detach from main loop
+-           Log::error(TRACE_MEDIAPLAYBACK, "Input exhausted");
++           //Log::error(TRACE_MEDIAPLAYBACK, "Input exhausted");
+            mInputExhausted = true;
+-           printf("ProcessFrame::NO_AVAILABLE_SAMPLES type: %s, mReadyToPlay: %s \n", mMediaType == AUDIO ? "AUDIO" : "VIDEO", mReadyToPlay ? "true" : "false");
++           //printf("ProcessFrame::NO_AVAILABLE_SAMPLES type: %s, mReadyToPlay: %s \n", mMediaType == AUDIO ? "AUDIO" : "VIDEO", mReadyToPlay ? "true" : "false");
+ #if defined(HORIZON_FUSION)
+            if (mMediaType == VIDEO && mPlaybackGroup->getPlaybackState() == 1 && !mEndOfStreamFlag && gst_app_src_get_current_level_bytes(GST_APP_SRC(mSrc)) == 0 && !mCallback->reportUnderflowReceived()) {
+              printf("ProcessFrame: reporting underflow \n");
+@@ -325,7 +325,7 @@ ESPlayerGst::init(const struct StreamPlayerInitData& initData,
+   return err;
+ }
+ 
+-#if !defined(HORIZON_FUSION)
++#if !(defined(HORIZON_FUSION)|| defined(SYNAPTICS))
+ // This is called from the rendererTask thread. There's no mutex preventing the
+ // playback state from changing while this is being called. That's OK. The
+ // underflow event reaches the UI asynchronously anyway.
+@@ -363,29 +363,29 @@ bool ESPlayerGst::readyForPlaybackStart()
+ void ESPlayerGst::flush()
  {
    // buffer push shouldn't happen because of the above mutex
-   Log::info(TRACE_MEDIACONTROL, "flushing pipeline...");
-+
-+  gst_element_set_state (mSrc, GST_STATE_NULL);
-+
+-  Log::info(TRACE_MEDIACONTROL, "flushing pipeline...");
++  Log::info(TRACE_MEDIACONTROL, "ESPlayerGst: flushing pipeline...%d",mMediaType);
++  if (mMediaType==AUDIO)
++      return;
+ 
+-#if defined(SYNAPTICS)
+-    // workaround for buffer handling trouble when using synaptics elements
+-    gst_element_set_state (mSrc, GST_STATE_NULL);
+-#endif
++  //gst_element_set_state (mSrc, GST_STATE_NULL);
+ 
    GstEvent* flush_start = gst_event_new_flush_start();
    gboolean ret = FALSE;
    ret = gst_element_send_event(mSrc, flush_start);
-diff --git a/partner/graphics/wpeframework/OpenGLContextEGL.cpp b/partner/graphics/wpeframework/OpenGLContextEGL.cpp
-index 9b4aec1..20cda67 100644
---- a/partner/graphics/wpeframework/OpenGLContextEGL.cpp
-+++ b/partner/graphics/wpeframework/OpenGLContextEGL.cpp
-@@ -57,7 +57,7 @@ bool OpenGLContext::init(OpenGLContext* share)
+   if (!ret)
+-    Log::error(TRACE_MEDIACONTROL, "failed to send flush-start event");
++    Log::error(TRACE_MEDIACONTROL, "ESPlayerGst: failed to send flush-start event");
+ 
+   GstEvent* flush_stop = gst_event_new_flush_stop(FALSE);
+ 
+   ret = gst_element_send_event(mSrc, flush_stop);
+   if (!ret)
+-    Log::error(TRACE_MEDIACONTROL,"failed to send flush-stop event");
++    Log::error(TRACE_MEDIACONTROL,"ESPlayerGst: failed to send flush-stop event");
+ 
+   Signal(DATA_SUFFICIENT);
+-  printf ("Detaching %d sink due to flush.\n", mMediaType);
++  printf ("ESPlayerGst: Detaching %d sink due to flush.\n", mMediaType);
+   mEndOfStreamFlag = false;
+   resetPtsOffset();
++  printf ("ESPlayerGst: Detaching %d sink due to flush done.\n", mMediaType);
+ }
+ 
+ MediaType ESPlayerGst::getMediaType()
+diff --git a/partner/dpi/gstreamer/ESPlayerGst.h b/partner/dpi/gstreamer/ESPlayerGst.h
+index 860a6ab..d15f998 100644
+--- a/partner/dpi/gstreamer/ESPlayerGst.h
++++ b/partner/dpi/gstreamer/ESPlayerGst.h
+@@ -69,7 +69,7 @@ public:
+  
+     virtual MediaType getMediaType();
+ 
+-#if !defined(HORIZON_FUSION)
++#if !(defined(HORIZON_FUSION)||defined(SYNAPTICS))
+     virtual void underflowReporter() {
+         qosUnderflowReporter(false);
+     }
+diff --git a/partner/dpi/gstreamer/PlaybackGroupNative.cpp b/partner/dpi/gstreamer/PlaybackGroupNative.cpp
+index 7aa3a0e..369cb2a 100644
+--- a/partner/dpi/gstreamer/PlaybackGroupNative.cpp
++++ b/partner/dpi/gstreamer/PlaybackGroupNative.cpp
+@@ -31,9 +31,10 @@ using namespace std;
+ static GstElement* findElement(GstElement *element, const char* targetName);
+ #endif
+ 
+-#if !defined(HORIZON_FUSION)
++#if !(defined(HORIZON_FUSION) || defined(SYNAPTICS))
+ static void setQOSRecursively(GstElement *element, gboolean qos)
  {
-     mPrivate = new OpenGLContextPrivate;
++        Log::info(TRACE_MEDIACONTROL, "PlaybackGroupNative::setQOS\n");
+   if (GST_IS_BIN(element)) {
+     GstIterator* it = gst_bin_iterate_elements(GST_BIN(element));
+     GValue item = G_VALUE_INIT;
+@@ -98,8 +99,10 @@ PlaybackGroupNative::PlaybackGroupNative(ESManagerNative& ESManager, uint32_t pi
+   //  mCloseThread(false)
+   mCurrentVideoWindow(zeroRect),
+   mNewVideoWindow(false)
+-#if defined(WESTEROS_SINK) || defined(SYNAPTICS)  || defined(SYNAPTICS_NATIVE)
+-, mSink(NULL)
++#if defined(WESTEROS_SINK) || defined(SYNAPTICS)
++  , mSink(NULL)
++  , mAren(NULL)
++  , mClk(NULL)
+ #endif
+ {
+   mPositionMonitor.reset(new PositionMonitor(this));
+@@ -122,7 +125,7 @@ PlaybackGroupNative::PlaybackGroupNative(ESManagerNative& ESManager, uint32_t pi
+     unsigned flagAudio = getGstPlayFlag("audio");
+     unsigned flagVideo = getGstPlayFlag("video");
+     unsigned flagNativeVideo = getGstPlayFlag("native-video");
+-#if defined(SYNAPTICS) || defined(SYNAPTICS_NATIVE)
++#if defined(SYNAPTICS)
+     unsigned flagNativeAudio = getGstPlayFlag("native-audio");
+ #else
+     unsigned flagNativeAudio = 0x0;
+@@ -154,22 +157,22 @@ PlaybackGroupNative::PlaybackGroupNative(ESManagerNative& ESManager, uint32_t pi
+     // g_object_set(mSink, "opacity",0.6f, NULL);
+ #endif
  
--    assert(WPEFramework::Display::Instance().GetDisplay() != EGL_NO_DISPLAY);
-+    assert(WPEFramework::Display::Instance().WaylandDisplay().GetDisplay() != EGL_NO_DISPLAY);
+-#if defined(SYNAPTICS_NATIVE)
+-    GstElementFactory* sinkFactory(gst_element_factory_find("synasink"));
+-    mSink = gst_element_factory_create(sinkFactory, "SynaVideoSink");
+-    g_object_set(mGstPipeline, "video-sink", mSink, NULL);
+-#endif
+-
+-#if defined(SYNAPTICS) || defined(SYNAPTICS_NATIVE)
+-    GstElement* audioSink = gst_element_factory_make("amparen", "AmpAudioSink");
+-    g_object_set(mGstPipeline, "audio-sink", audioSink, NULL);
++#if defined(SYNAPTICS)
++    mAren = gst_element_factory_make("amparen", "AmpAudioSink");
++    g_object_set(mGstPipeline, "audio-sink", mAren, NULL);
  
-     mWidth =  mPrivate->client.Width();
-     mHeight =  mPrivate->client.Height();
+-    GstClock* clk(NULL);
+-    clk = gst_element_provide_clock(audioSink);
++    //GstClock* clk(NULL);
++    mClk = gst_element_provide_clock(mAren);
+ 
+-    if (clk != NULL && mSink != NULL) {
+-        gst_element_set_clock(mSink, clk);
++    if (mClk != NULL && mSink != NULL) {
++        gst_element_set_clock(mSink, mClk);
+     }
++
++    /* Native audio */
++    gint playbin_flag;
++    g_object_get (mGstPipeline, "flags", &playbin_flag, NULL);
++    playbin_flag |= 0x00000020;
++    g_object_set (mGstPipeline, "flags", playbin_flag, NULL);
+ #endif
+ 
+     ESPlayerConstants::VIDEO_REN_SCREEN_WIDTH = sConfiguration->videoRendererScreenWidth;
+@@ -199,6 +202,28 @@ PlaybackGroupNative::~PlaybackGroupNative()
+     Log::info(TRACE_MEDIACONTROL, "Pipeline disposing");
+     // clear out the pipeline
+     gst_element_set_state (mGstPipeline, GST_STATE_NULL);
++
++#if defined(WESTEROS_SINK) || defined(SYNAPTICS)
++     if (mAren != NULL){
++        Log::info(TRACE_MEDIACONTROL, "Pipeline disposing- destroy aren");
++         gst_object_unref(mAren);
++         mAren=NULL;
++    }
++#endif
++
++#if 0
++    if (mClk != NULL){
++        Log::info(TRACE_MEDIACONTROL, "Pipeline disposing- destroy clk");
++         gst_object_unref(mClk);
++         mClk=NULL;
++    }
++
++     if (mSink != NULL){
++         gst_object_unref(mSink);
++    }
++#endif
++
++
+     ret = gst_element_get_state (mGstPipeline,&state,&pending,GST_CLOCK_TIME_NONE);
+     while (state!=GST_STATE_NULL) {
+         ret = gst_element_get_state (mGstPipeline,&state,&pending,GST_CLOCK_TIME_NONE);
+@@ -217,17 +242,11 @@ PlaybackGroupNative::~PlaybackGroupNative()
+ 
+     // stop watching
+     //g_source_remove(mGstPipelineWatchId);
+-
+     gst_object_unref(mGstPipeline);
+ 
+     if (mSource)
+         gst_object_unref(mSource);
+ 
+-#if defined(WESTEROS_SINK) || defined(SYNAPTICS) || defined(SYNAPTICS_NATIVE)
+-    if (mSink != NULL){
+-         gst_object_unref(mSink);
+-    }
+-#endif
+     // stop main loop
+     if (g_main_loop_is_running(mMainLoop)){
+         g_main_loop_quit(mMainLoop);
+@@ -454,14 +473,14 @@ IPlaybackGroup::PlaybackState PlaybackGroupNative::getPlaybackState()
+ void PlaybackGroupNative::flush()
+ {
+     set<ESPlayerGst*>::iterator it;
+-    NTRACE(TRACE_MEDIACONTROL, "PlaybackGroupNative::flush() begin");
++    Log::info(TRACE_MEDIACONTROL, "PlaybackGroupNative::flush() begin");
+ 
+     // stop buffer push.
+     for(it = mStreamPlayers.begin(); it != mStreamPlayers.end(); it++)
+     {
+         (*it)->flush();
+     }
+-
++#if 0
+     Log::info(TRACE_MEDIACONTROL, "flushing pipeline...");
+     gboolean ret = FALSE;
+ 
+@@ -472,6 +491,12 @@ void PlaybackGroupNative::flush()
+     ret = gst_element_send_event(mSource, gst_event_new_flush_stop(TRUE));
+     if (!ret)
+       Log::error(TRACE_MEDIACONTROL,"failed to send flush-stop event");
++#endif
++//#if defined(WESTEROS_SINK) || defined(SYNAPTICS)
++//    if (mSink != NULL){
++//         gst_object_unref(mSink);
++//    }
++//#endif
+ 
+     // reset pts offset for everybody
+     for(it = mStreamPlayers.begin(); it != mStreamPlayers.end(); it++)
+@@ -498,7 +523,7 @@ void PlaybackGroupNative::audioFlushed()
+ {
+ }
+ 
+-#if defined(BCM_NEXUS) || defined(WESTEROS_SINK) || defined(SYNAPTICS) || defined(SYNAPTICS_NATIVE)
++#if defined(BCM_NEXUS) || defined(WESTEROS_SINK) || defined(SYNAPTICS)
+ // utility function for bcm nexus seek functionality
+ static GstElement* findElement(GstElement *element, const char* targetName)
+ {
+@@ -653,8 +678,6 @@ void PlaybackGroupNative::updateVideoRectangle()
+   videoDec = findElement(mGstPipeline, "brcmvideosink");
+ #elif defined(WESTEROS_SINK) || defined(SYNAPTICS)
+   videoDec = findElement(mGstPipeline, "westerossink");
+-#elif defined(SYNAPTICS_NATIVE)
+-  videoDec = findElement(mGstPipeline, "synasink");
+ #else
+     return;
+ #endif
+@@ -830,7 +853,8 @@ gboolean PlaybackGroupNative::handleGstMessage(GstMessage* message)
+       if (oldstate == GST_STATE_NULL && newstate == GST_STATE_READY) {
+       } else if (oldstate == GST_STATE_READY && newstate == GST_STATE_PAUSED) {
+         GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS(GST_BIN(mGstPipeline), GST_DEBUG_GRAPH_SHOW_ALL, "paused-pipeline");
+-#if !defined(HORIZON_FUSION)
++#if !(defined(HORIZON_FUSION)|| defined(SYNAPTICS))
++
+         GstElement* videosink = NULL;
+         g_object_get(G_OBJECT(mGstPipeline), "video-sink", &videosink, NULL);
+         if (videosink != NULL) {
+@@ -845,7 +869,8 @@ gboolean PlaybackGroupNative::handleGstMessage(GstMessage* message)
+       } else if (oldstate == GST_STATE_PLAYING && newstate == GST_STATE_PAUSED) {
+         stopPositionTimer();
+       } else if (oldstate == GST_STATE_PAUSED && newstate == GST_STATE_READY) {
+-#if !defined(HORIZON_FUSION)
++#if !(defined(HORIZON_FUSION)|| defined(SYNAPTICS))
++
+         GstElement* videosink = NULL;
+         g_object_get(G_OBJECT(mGstPipeline), "video-sink", &videosink, NULL);
+         if (videosink != NULL) {
+@@ -856,7 +881,8 @@ gboolean PlaybackGroupNative::handleGstMessage(GstMessage* message)
+       } else if (oldstate == GST_STATE_READY && newstate == GST_STATE_NULL) {
+       }
+       break;
+-#if !defined(HORIZON_FUSION)
++#if !(defined(HORIZON_FUSION)||defined(SYNAPTICS))
++
+     case GST_MESSAGE_QOS:
+       {
+         gboolean live = FALSE;
+diff --git a/partner/dpi/gstreamer/PlaybackGroupNative.h b/partner/dpi/gstreamer/PlaybackGroupNative.h
+index e91aa2a..3203cca 100644
+--- a/partner/dpi/gstreamer/PlaybackGroupNative.h
++++ b/partner/dpi/gstreamer/PlaybackGroupNative.h
+@@ -174,8 +174,10 @@ private:
+     shared_ptr<VideoSinkGStreamer> mVideoSinkGst;
+ #endif
+ 
+-#if defined(WESTEROS_SINK) || defined(SYNAPTICS) || defined(SYNAPTICS_NATIVE)
++#if defined(WESTEROS_SINK) || defined(SYNAPTICS)
+     GstElement* mSink;
++    GstElement* mAren;
++    GstClock* mClk;
+ #endif
+ };
+ } // namespace esplayer
+-- 
+2.7.4
+

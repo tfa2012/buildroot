@@ -52,7 +52,6 @@ ifeq ($(BR2_PACKAGE_MARVELL_AMPSDK),y)
  WESTEROS_SINK_PKGDIR = "$(TOP_DIR)/package/westeros-sink"
  define WESTEROS_SINK_APPLY_LOCAL_PATCHES
   $(APPLY_PATCHES) $(@D) $(WESTEROS_SINK_PKGDIR) 0001-synaptics_support.patch.conditional;
-  $(APPLY_PATCHES) $(@D) $(WESTEROS_SINK_PKGDIR) 0002-Dispatch_the_custom_queue_instead_of_flushing_the_display_synaptics.patch.conditional;
  endef
  WESTEROS_SINK_POST_PATCH_HOOKS += WESTEROS_SINK_APPLY_LOCAL_PATCHES
 endif

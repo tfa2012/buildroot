@@ -1,0 +1,40 @@
+diff -Naur a/syna/westeros-sink/westeros-sink.c b/syna/westeros-sink/westeros-sink.c
+--- a/syna/westeros-sink/westeros-sink.c	2018-02-08 15:47:37.022042891 +0100
++++ b/syna/westeros-sink/westeros-sink.c	2018-02-08 16:03:05.932221971 +0100
+@@ -91,6 +91,7 @@
+ 
+ 	sprintf( name, "westeros-sink-surface-%x", surfaceId );	
+ 	wl_simple_shell_set_name( sink->shell, surfaceId, name );
++/*
+    if ( (sink->windowWidth == 0) || (sink->windowHeight == 0) )
+    {
+       wl_simple_shell_set_visible( sink->shell, sink->surfaceId, false);
+@@ -103,6 +104,7 @@
+       wl_simple_shell_set_opacity( sink->shell, sink->surfaceId, op);
+       wl_simple_shell_get_status( sink->shell, sink->surfaceId );
+    }
++*/
+    wl_display_flush(sink->display);
+ }                           
+ 
+@@ -262,8 +264,7 @@
+    }
+    
+    gst_westeros_sink_soc_registryHandleGlobal( sink, registry, id, interface, version );
+-
+-   wl_display_flush(sink->display);
++   // wl_display_flush(sink->display);
+ }
+ 
+ static void registryHandleGlobalRemove(void *data, 
+@@ -461,7 +462,9 @@
+                sink->surface= wl_compositor_create_surface(sink->compositor);
+                printf("gst_westeros_sink_init: surface=%p\n", (void*)sink->surface);
+                wl_proxy_set_queue((struct wl_proxy*)sink->surface, sink->queue);
+-               
++
++               wl_display_dispatch_queue( sink->display, sink->queue );
++
+                wl_display_flush( sink->display );
+             }
+             else

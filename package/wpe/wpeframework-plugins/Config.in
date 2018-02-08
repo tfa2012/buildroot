@@ -289,12 +289,20 @@ config BR2_PACKAGE_WPEFRAMEWORK_WEBKITBROWSER_TRANSPARENT
 	bool "transparent"
 	default false
 
-config BR2_PACKAGE_WPEFRAMEWORK_YOUTUBE
+menuconfig BR2_PACKAGE_WPEFRAMEWORK_YOUTUBE
 	depends on BR2_PACKAGE_WPEFRAMEWORK_WEBKITBROWSER
 	bool "youtube"
 	help
 	  A wrapper around the youtube app to start it as a
 	  wpeframework plugin.
+
+if BR2_PACKAGE_WPEFRAMEWORK_YOUTUBE
+    config WPEFRAMEWORK_PLUGIN_WEBKITBROWSER_YOUTUBE_ALLOW_WINDOW_CLOSE
+		bool "Allow close"
+		default false
+		help
+			Allow window.close call for Youtube.
+endif	  
 
 config BR2_PACKAGE_WPEFRAMEWORK_UX
 	depends on BR2_PACKAGE_WPEFRAMEWORK_WEBKITBROWSER

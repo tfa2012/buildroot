@@ -48,4 +48,7 @@ sed -i '/XDG_RUNTIME_DIR/a export EGL_MVGFX_H=1080' "${TARGET_DIR}/etc/init.d/S8
 sed -i '/XDG_RUNTIME_DIR/a export EGL_MVGFX_W=1920' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 sed -i '/XDG_RUNTIME_DIR/a export LD_LIBRARY_PATH=/usr/lib/gstreamer-1.0:$LD_LIBRARY_PATH' "${TARGET_DIR}/etc/init.d/S80WPEFramework"
 
+# static secondary ip for wlan0
+cat ${BOARD_DIR}/interface_extend.txt >> ${TARGET_DIR}/etc/network/interfaces
+
 mkdir -p "${TARGET_DIR}/usr/bin"

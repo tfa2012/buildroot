@@ -1,0 +1,10 @@
+
+
+# Added staic IP for the DHCPServer of WPEFramework
+# Let's hope that the 172.23.45.x network is not used  :-)
+
+auto wlan0:1
+iface wlan0:1 inet static
+    address 172.23.45.1
+    netmask 255.255.255.0
+    broadcast  172.23.45.255

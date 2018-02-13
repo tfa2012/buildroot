@@ -1,0 +1,12 @@
+diff -Nuar output/build/wpeframework-plugins-custom/WebKitBrowser/WebKitImplementation.cpp output/build/wpeframework-plugins-edit/WebKitBrowser/WebKitImplementation.cpp
+--- a/WebKitBrowser/WebKitImplementation.cpp	2018-02-12 22:43:43.557664199 +0100
++++ b/WebKitBrowser/WebKitImplementation.cpp	2018-02-12 22:46:32.210396249 +0100
+@@ -922,7 +922,7 @@
+             WKPreferencesSetAllowScriptsToCloseWindow(preferences, _config.AllowWindowClose.Value());
+ 
+             // Turn on/off non composited WebGL
+-            WKPreferencesSetNonCompositedWebGLEnabled(preferences, _config.NonCompositedWebGLEnabled.Value());
++            // WKPreferencesSetNonCompositedWebGLEnabled(preferences, _config.NonCompositedWebGLEnabled.Value());
+ 
+             WKPageGroupSetPreferences(pageGroup, preferences);
+ 

@@ -667,7 +667,7 @@ endif
 
 config BR2_PACKAGE_WPEFRAMEWORK_PLUGINS_TVCONTROL_FREQUENCY_LIST
     string "Frequency List"
-    default "354"
+    default "0"
     depends on BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
     help
       Sets the Frequency List for scanning in MHz using either ',' as the separator

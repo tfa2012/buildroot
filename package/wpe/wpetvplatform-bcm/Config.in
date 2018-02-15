@@ -1,0 +1,5 @@
+menuconfig BR2_PACKAGE_TVPLATFORM_BCM
+	bool "wpetvplatform-bcm"
+    depends on (BR2_PACKAGE_BCM_REFSW || BR2_PACKAGE_HAS_NEXUS)
+	help
+	  Base library for TVPlatform Implementation for Broadcom.

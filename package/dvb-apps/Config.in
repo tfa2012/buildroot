@@ -12,3 +12,12 @@ config BR2_PACKAGE_DVB_APPS
 
 comment "dvb-apps utils needs a toolchain w/ threads, headers >= 3.3"
 	depends on !BR2_TOOLCHAIN_HAS_THREADS || !BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_3
+
+if BR2_PACKAGE_DVB_APPS
+menu "DVB Tuner Firmware"
+    config BR2_PACKAGE_DVB_WINTV_TUNER
+        bool "Hauppauge WinTV Tuner"
+        help
+            Enable Hauppauge WinTV Tuner firmware
+endmenu
+endif

@@ -207,7 +207,14 @@ define LINUX_TRY_PATCH_TIMECONST
 		$(APPLY_PATCHES) $(@D) $(LINUX_PKGDIR) 0001-timeconst.pl-Eliminate-Perl-warning.patch.conditional ; \
 	fi
 endef
+define LINUX_TRY_PATCH_TUNER_HANG
+	@if patch -p1 --dry-run -f -s -d $(@D) <$(LINUX_PKGDIR)/0002-Hauppauge_WinTV-HVR-950Q_dvb_tuner_hang_fix.patch.conditional >/dev/null ; then \
+		$(APPLY_PATCHES) $(@D) $(LINUX_PKGDIR) 0002-Hauppauge_WinTV-HVR-950Q_dvb_tuner_hang_fix.patch.conditional ; \
+	fi
+endef
+
 LINUX_POST_PATCH_HOOKS += LINUX_TRY_PATCH_TIMECONST
+LINUX_POST_PATCH_HOOKS += LINUX_TRY_PATCH_TUNER_HANG
 
 ifeq ($(BR2_LINUX_KERNEL_USE_DEFCONFIG),y)
 LINUX_KCONFIG_DEFCONFIG = $(call qstrip,$(BR2_LINUX_KERNEL_DEFCONFIG))_defconfig

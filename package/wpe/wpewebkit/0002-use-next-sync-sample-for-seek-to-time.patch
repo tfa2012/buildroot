@@ -1,0 +1,88 @@
+diff --git a/Source/WebCore/Modules/mediasource/MediaSource.cpp b/Source/WebCore/Modules/mediasource/MediaSource.cpp
+index 46ce126..23674fa 100644
+--- a/Source/WebCore/Modules/mediasource/MediaSource.cpp
++++ b/Source/WebCore/Modules/mediasource/MediaSource.cpp
+@@ -232,6 +232,14 @@ void MediaSource::seekToTime(const MediaTime& time)
+     // ↳ Otherwise
+     // Continue
+ 
++#if PLATFORM(BCM_NEXUS)
++    MediaTime negativeThreshold = MediaTime::zeroTime();
++    MediaTime positiveThreshold = MediaTime(10, 1); // Find sync sample in the next 5 seconds
++    for (auto& sourceBuffer : *m_activeSourceBuffers) {
++        m_pendingSeekTime = sourceBuffer->findVideoSyncSampleMediaTime(time, negativeThreshold, positiveThreshold);
++    }
++#endif
++
+ // https://bugs.webkit.org/show_bug.cgi?id=125157 broke seek on MediaPlayerPrivateGStreamerMSE
+ #if !USE(GSTREAMER)
+     m_private->waitForSeekCompleted();
+diff --git a/Source/WebCore/Modules/mediasource/SourceBuffer.cpp b/Source/WebCore/Modules/mediasource/SourceBuffer.cpp
+index 75fbbab..c56f983 100644
+--- a/Source/WebCore/Modules/mediasource/SourceBuffer.cpp
++++ b/Source/WebCore/Modules/mediasource/SourceBuffer.cpp
+@@ -435,6 +435,49 @@ void SourceBuffer::seekToTime(const MediaTime& time)
+     }
+ }
+ 
++#if PLATFORM(BCM_NEXUS)
++MediaTime SourceBuffer::findVideoSyncSampleMediaTime(const MediaTime& targetTime, const MediaTime& negativeThreshold, const MediaTime& positiveThreshold)
++{
++    MediaTime seekTime = targetTime;
++    MediaTime lowerBoundTime = targetTime - negativeThreshold;
++    MediaTime upperBoundTime = targetTime + positiveThreshold;
++
++    for (auto& trackBufferPair : m_trackBufferMap) {
++        const auto& trackID = trackBufferPair.key;
++        if (trackID.startsWith("V")) {
++            TrackBuffer& trackBuffer = trackBufferPair.value;
++
++            // Find the sample which contains the target time.
++            auto futureSyncSampleIterator = trackBuffer.samples.decodeOrder().findSyncSampleAfterPresentationTime(targetTime, positiveThreshold);
++            auto pastSyncSampleIterator = trackBuffer.samples.decodeOrder().findSyncSamplePriorToPresentationTime(targetTime, negativeThreshold);
++            auto upperBound = trackBuffer.samples.decodeOrder().end();
++            auto lowerBound = trackBuffer.samples.decodeOrder().rend();
++
++            if (futureSyncSampleIterator == upperBound && pastSyncSampleIterator == lowerBound)
++                continue;
++
++            MediaTime futureSeekTime = MediaTime::positiveInfiniteTime();
++            if (futureSyncSampleIterator != upperBound) {
++                RefPtr<MediaSample>& sample = futureSyncSampleIterator->second;
++                futureSeekTime = sample->presentationTime();
++            }
++
++            MediaTime pastSeekTime = MediaTime::negativeInfiniteTime();
++            if (pastSyncSampleIterator != lowerBound) {
++                RefPtr<MediaSample>& sample = pastSyncSampleIterator->second;
++                pastSeekTime = sample->presentationTime();
++            }
++
++            MediaTime trackSeekTime = abs(targetTime - futureSeekTime) < abs(targetTime - pastSeekTime) ? futureSeekTime : pastSeekTime;
++            if (abs(targetTime - trackSeekTime) > abs(targetTime - seekTime))
++                seekTime = trackSeekTime;
++        }
++    }
++
++    return seekTime;
++}
++#endif
++
+ MediaTime SourceBuffer::sourceBufferPrivateFastSeekTimeForMediaTime(const MediaTime& targetTime, const MediaTime& negativeThreshold, const MediaTime& positiveThreshold)
+ {
+     MediaTime seekTime = targetTime;
+diff --git a/Source/WebCore/Modules/mediasource/SourceBuffer.h b/Source/WebCore/Modules/mediasource/SourceBuffer.h
+index 9109186..832c0a3 100644
+--- a/Source/WebCore/Modules/mediasource/SourceBuffer.h
++++ b/Source/WebCore/Modules/mediasource/SourceBuffer.h
+@@ -86,7 +86,9 @@ public:
+     void abortIfUpdating();
+     void removedFromMediaSource();
+     void seekToTime(const MediaTime&);
+-
++#if PLATFORM(BCM_NEXUS)
++    MediaTime findVideoSyncSampleMediaTime(const MediaTime&, const MediaTime& negativeThreshold, const MediaTime& positiveThreshold);
++#endif
+     bool canPlayThroughRange(PlatformTimeRanges&);
+ 
+     bool hasVideo() const;

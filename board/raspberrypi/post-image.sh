@@ -7,6 +7,18 @@ GENIMAGE_TMP="${BUILD_DIR}/genimage.tmp"
 
 echo "Post-image: processing $@"
 
+COBALT="$(grep ^BR2_PACKAGE_COBALT=y ${BR2_CONFIG})"
+if [ "x${COBALT}" != "x" ]; then
+	if ! grep -qE '^dtparam=audio=on' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
+		echo "Adding 'dtparam=audio=on' to config.txt."
+		cat << __EOF__ >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+
+# Enable the onboard ALSA audio
+dtparam=audio=on
+__EOF__
+	fi
+fi
+
 for i in "$@"
 do
 case "$i" in
@@ -28,6 +40,27 @@ __EOF__
 # Force 720p
 hdmi_group=1
 hdmi_mode=4
+__EOF__
+	fi
+	;;
+    --tvmode-1080)
+    if ! grep -qE '^hdmi_mode=16' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
+            echo "Adding 'tvmode=1080' to config.txt."
+            cat << __EOF__ >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+
+# Force 1080p
+hdmi_group=1
+hdmi_mode=16
+__EOF__
+    fi
+	;;
+	--tvmode-dvi)
+	if ! grep -qE '^hdmi_drive=2' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
+		echo "Adding 'tvmode=dvi' to config.txt."
+		cat << __EOF__ >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+
+# Force dvi output
+hdmi_drive=2
 __EOF__
 	fi
 	;;
@@ -77,6 +110,7 @@ __EOF__
 
 # Enable i2c functionality
 dtparam=i2c_arm=on,i2c_arm_baudrate=400000
+dtparam=i2c1=on,i2c1_baudrate=50000
 __EOF__
 	fi
 	;;
@@ -107,6 +141,16 @@ __EOF__
 
 # Enable 1Wire functionality
 dtoverlay=lirc-rpi,gpio_in_pin=23,gpio_out_pin=22
+__EOF__
+	fi
+	;;
+	--touchscreen)
+	if ! grep -qE '^dtoverlay=ads7846' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
+		echo "Adding 'ads7846' functionality to config.txt."
+		cat << __EOF__ >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+
+# Enable ADS7846 Touchscreen
+dtoverlay=ads7846,cs=0,penirq=25,penirq_pull=2,speed=10000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=199,xmax=3999,ymin=199,ymax=3999
 __EOF__
 	fi
 	;;

@@ -1,22 +1,61 @@
-COBALT_VERSION = ef837fa448402e2ada2fb3821210cc20d850164b
-COBALT_SITE = https://cobalt.googlesource.com/cobalt
+################################################################################
+#
+# COBALT
+#
+################################################################################
+
+COBALT_VERSION = 6ea1111f44caf7caa93a4dffeb6780a8c9d0a8b3
 COBALT_SITE_METHOD = git
-export RASPI_HOME=$(HOST_DIR)/usr
+COBALT_SITE = git@github.com:Metrological/cobalt
+COBALT_INSTALL_STAGING = YES
+COBALT_DEPENDENCIES = alsa-lib gstreamer1 gst1-plugins-base gst1-plugins-good gst1-plugins-bad host-bison host-ninja
+
+export BUILDROOT_HOME=$(HOST_DIR)/usr
 export PATH := $(HOST_DIR)/bin:$(HOST_DIR)/usr/bin:$(HOST_DIR)/usr/sbin:$(PATH)
 
-COBALT_DEPENDENCIES = ffmpeg alsa-lib
+PLATFORM_DIR = wpe-rpi
+PLATFORM_QA_DIR = wpe-rpi_qa
+
+ifeq ($(BR2_PACKAGE_COBALT_IMAGE_AS_LIB), y)
+export COBALT_EXECUTABLE_TYPE = shared_library
+else
+export COBALT_EXECUTABLE_TYPE = executable
+endif
+
+ifeq ($(BR2_PACKAGE_COBALT_IMAGE_AS_LIB), y)
+define COBALT_INSTALL_IMAGE
+    cp -a $(@D)/src/out/$(PLATFORM_QA_DIR)/lib/libcobalt.so  $(TARGET_DIR)/usr/lib
+endef
+define COBALT_INSTALL_STAGING_IMAGE
+    mkdir -p $(STAGING_DIR)/usr/include/starboard/wpe/shared
+    mkdir -p $(STAGING_DIR)/usr/include/starboard/wpe/rpi
+
+    cp $(@D)/src/starboard/*.h $(STAGING_DIR)/usr/include/starboard/
+    cp $(@D)/src/starboard/wpe/rpi/*.h  $(STAGING_DIR)/usr/include/starboard/wpe/rpi
+    cp $(@D)/src/starboard/wpe/shared/*.h  $(STAGING_DIR)/usr/include/starboard/wpe/shared
+
+    cp -a $(@D)/src/out/$(PLATFORM_QA_DIR)/lib/libcobalt.so  $(STAGING_DIR)/usr/lib
+endef
+else
+define COBALT_INSTALL_IMAGE
+    cp -a $(@D)/src/out/$(PLATFORM_QA_DIR)/cobalt $(TARGET_DIR)/usr/bin
+endef
+endif
 
 define COBALT_BUILD_CMDS
-        $(@D)/src/cobalt/build/gyp_cobalt -C qa raspi-2
-        $(RASPI_HOME)/bin/ninja -C $(@D)/src/out/raspi-2_qa cobalt
+    $(@D)/src/cobalt/build/gyp_cobalt -C qa $(PLATFORM_DIR)
+    $(BUILDROOT_HOME)/bin/ninja -C $(@D)/src/out/$(PLATFORM_QA_DIR) cobalt
 endef
 
 define COBALT_INSTALL_TARGET_CMDS
-        cp -a $(@D)/src/out/raspi-2_qa/cobalt $(TARGET_DIR)/usr/bin
-        cp -a $(@D)/src/out/raspi-2_qa/content $(TARGET_DIR)/usr/share
-        rm -rf $(TARGET_DIR)/usr/bin/content
-        ln -s /usr/share/content $(TARGET_DIR)/usr/bin/content
+    cp -a $(@D)/src/out/$(PLATFORM_QA_DIR)/content $(TARGET_DIR)/usr/share
+    rm -rf $(TARGET_DIR)/usr/bin/content
+    ln -s /usr/share/content $(TARGET_DIR)/usr/bin/content
+    $(call COBALT_INSTALL_IMAGE)
+endef
+
+define COBALT_INSTALL_STAGING_CMDS
+    $(call COBALT_INSTALL_STAGING_IMAGE)
 endef
 
 $(eval $(generic-package))
-

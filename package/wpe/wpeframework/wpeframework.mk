@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-WPEFRAMEWORK_VERSION = e398d8f81b5ac7a64683cf0364ed593054ad0a5b
+WPEFRAMEWORK_VERSION = 5d3f0cf0e8f0377fab6b507b9bf06b2e94572f75 
 WPEFRAMEWORK_SITE_METHOD = git
 WPEFRAMEWORK_SITE = git@github.com:WebPlatformForEmbedded/WPEFramework.git
 WPEFRAMEWORK_INSTALL_STAGING = YES
@@ -54,7 +54,7 @@ WPEFRAMEWORK_EXTERN_EVENTS += Provisioning
 endif
 
 ifeq ($(BR2_PACKAGE_WPEFRAMEWORK_LOCATIONSYNC),y)
-WPEFRAMEWORK_EXTERN_EVENTS += Network
+WPEFRAMEWORK_EXTERN_EVENTS += Internet
 WPEFRAMEWORK_EXTERN_EVENTS += Location
 endif
 
@@ -67,29 +67,44 @@ WPEFRAMEWORK_EXTERN_EVENTS += Platform
 WPEFRAMEWORK_EXTERN_EVENTS += Graphics
 endif
 
+ifeq ($(BR2_PACKAGE_WPEFRAMEWORK_NETWORKCONTROL),y)
+WPEFRAMEWORK_EXTERN_EVENTS += Network
+endif
+
 ifeq ($(BR2_PACKAGE_WPEFRAMEWORK_CDMI),y)
 WPEFRAMEWORK_EXTERN_EVENTS += Decryption
+endif
+
+ifeq ($(BR2_PACKAGE_WPEFRAMEWORK_WEBSERVER),y)
+WPEFRAMEWORK_EXTERN_EVENTS += WebSource
 endif
 
 WPEFRAMEWORK_CONF_OPTS += -DEXTERN_EVENTS="${WPEFRAMEWORK_EXTERN_EVENTS}"
 
 
+ifeq ($(BR2_PACKAGE_WPEFRAMEWORK_NETWORKCONTROL),y)
 define WPEFRAMEWORK_POST_TARGET_INITD
-    mkdir -p $(TARGET_DIR)/etc/init.d
-    $(INSTALL) -D -m 0755 $(WPEFRAMEWORK_PKGDIR)/S80WPEFramework $(TARGET_DIR)/etc/init.d
+	mkdir -p $(TARGET_DIR)/etc/init.d
+	$(INSTALL) -D -m 0755 $(WPEFRAMEWORK_PKGDIR)/S80WPEFramework $(TARGET_DIR)/etc/init.d/S40WPEFramework
 endef
+else
+define WPEFRAMEWORK_POST_TARGET_INITD
+	mkdir -p $(TARGET_DIR)/etc/init.d
+	$(INSTALL) -D -m 0755 $(WPEFRAMEWORK_PKGDIR)/S80WPEFramework $(TARGET_DIR)/etc/init.d
+endef
+endif
 
 define WPEFRAMEWORK_POST_TARGET_REMOVE_STAGING_ARTIFACTS
-    mkdir -p $(TARGET_DIR)/etc/WPEFramework
-    rm -rf $(TARGET_DIR)/usr/share/WPEFramework/cmake
+	mkdir -p $(TARGET_DIR)/etc/WPEFramework
+	rm -rf $(TARGET_DIR)/usr/share/WPEFramework/cmake
 endef
 
 define WPEFRAMEWORK_POST_TARGET_REMOVE_HEADERS
-    rm -rf $(TARGET_DIR)/usr/include/WPEFramework
+	rm -rf $(TARGET_DIR)/usr/include/WPEFramework
 endef
 
 define WPEFRAMEWORK_POST_STAGING_CDM_HEADER
-    ln -sfn $(STAGING_DIR)/usr/include/WPEFramework/interfaces/IDRM.h $(STAGING_DIR)/usr/include/cdmi.h
+	ln -sfn $(STAGING_DIR)/usr/include/WPEFramework/interfaces/IDRM.h $(STAGING_DIR)/usr/include/cdmi.h
 endef
 
 ifeq ($(BR2_PACKAGE_WPEFRAMEWORK_CDM),y)

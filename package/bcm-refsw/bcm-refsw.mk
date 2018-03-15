@@ -220,9 +220,10 @@ define BCM_REFSW_INSTALL_TARGET_NXSERVER_INIT
 endef
 endif
 
+# TODO: sort out installation of nxserver vs. WPEFramework compositor
 define BCM_REFSW_INSTALL_TARGET_NXSERVER
 	$(INSTALL) -D $(BCM_REFSW_BIN)/libnxclient.so $(1)/usr/lib/libnxclient.so
-	if [ "x$(BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR)" = "x" ]; then \
+	if [ "x" = "x" ]; then \
 		$(INSTALL) -m 755 -D $(BCM_REFSW_BIN)/nxserver $(1)/usr/bin/nxserver; \
 		$(BCM_REFSW_INSTALL_TARGET_NXSERVER_INIT) \
 	fi

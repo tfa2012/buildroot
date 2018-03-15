@@ -5,9 +5,6 @@
 ################################################################################
 
 FREETYPE_VERSION = 2.7.1
-ifeq ($(BR2_PACKAGE_NETFLIX),y)
-FREETYPE_VERSION = 2.4.6
-endif
 FREETYPE_SOURCE = freetype-$(FREETYPE_VERSION).tar.bz2
 FREETYPE_SITE = http://download.savannah.gnu.org/releases/freetype
 FREETYPE_INSTALL_STAGING = YES

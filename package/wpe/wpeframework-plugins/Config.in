@@ -8,13 +8,6 @@ config BR2_PACKAGE_WPEFRAMEWORK_COMMANDER
 	help
 	  Commander Plugin
 
-config BR2_PACKAGE_WPEFRAMEWORK_SHADOW
-	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-	default n
-	bool "Shadow"
-	help
-	  Shadow Plugin
-
 menuconfig BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR
 	select BR2_PACKAGE_WPEFRAMEWORK_VIRTUALINPUT
 	bool "Compositor"
@@ -241,6 +234,13 @@ config BR2_PACKAGE_WPEFRAMEWORK_RPCLINK
 	bool "RPC link server"
 	help
 	  Plugin adding an RPC server to act as a server itself
+
+config BR2_PACKAGE_WPEFRAMEWORK_SHADOW
+	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
+	default n
+	bool "Shadow"
+	help
+	  Shadow Plugin
 
 config BR2_PACKAGE_WPEFRAMEWORK_SNAPSHOT
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS

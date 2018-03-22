@@ -103,6 +103,14 @@ BCM_REFSW_IRMODE=23
 endif
 endif
 
+ifneq ($(BR2_PACKAGE_BCM_REFSW_GRAPHICS_HEAP_SIZE),)
+BCM_REFSW_GRAPHICS_HEAP_SIZE=$(call qstrip,$(BR2_PACKAGE_BCM_REFSW_GRAPHICS_HEAP_SIZE))
+endif
+
+ifneq ($(BR2_PACKAGE_BCM_REFSW_BOXMODE),)
+BCM_REFSW_BOXMODE=$(call qstrip,$(BR2_PACKAGE_BCM_REFSW_BOXMODE))
+endif
+
 define BCM_REFSW_BUILD_NEXUS
 	$(TARGET_CONFIGURE_OPTS) \
 	$(TARGET_MAKE_ENV) \
@@ -216,7 +224,9 @@ endef
 else
 define BCM_REFSW_INSTALL_TARGET_NXSERVER_INIT
 	$(INSTALL) -D -m 755 package/bcm-refsw/S70nxserver $(TARGET_DIR)/etc/init.d/S70nxserver; \
-	sed -i 's/%IRMODE%/${BCM_REFSW_IRMODE}/g' $(TARGET_DIR)/etc/init.d/S70nxserver;
+	sed -i 's/%IRMODE%/${BCM_REFSW_IRMODE}/g' $(TARGET_DIR)/etc/init.d/S70nxserver; \
+	sed -i 's/%GRAPHICS_HEAP_SIZE%/${BCM_REFSW_GRAPHICS_HEAP_SIZE}/g' $(TARGET_DIR)/etc/init.d/S70nxserver; \
+	sed -i 's/%BOXMODE%/${BCM_REFSW_BOXMODE}/g' $(TARGET_DIR)/etc/init.d/S70nxserver;
 endef
 endif
 

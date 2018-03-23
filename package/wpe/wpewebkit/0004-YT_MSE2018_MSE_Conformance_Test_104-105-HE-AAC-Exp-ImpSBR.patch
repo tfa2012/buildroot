@@ -1,0 +1,166 @@
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 0a875d2..12d474b 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -158,6 +158,7 @@ MediaPlayerPrivateGStreamer::MediaPlayerPrivateGStreamer(MediaPlayer* player)
+     , m_totalBytes(0)
+     , m_preservesPitch(false)
+     , m_lastQuery(-1)
++    , m_underflowCounter(0)
+ {
+ #if USE(GLIB)
+     m_readyTimerHandler.setPriority(G_PRIORITY_DEFAULT_IDLE);
+@@ -306,8 +307,7 @@ void MediaPlayerPrivateGStreamer::commitLoad()
+ }
+ 
+ #if PLATFORM(BCM_NEXUS)
+-// utility function for bcm nexus seek functionality
+-static GstElement* findVideoDecoder(GstElement *element)
++static GstElement* findElement(GstElement *element, const CString &search)
+ {
+     GstElement* re = nullptr;
+     if (GST_IS_BIN(element)) {
+@@ -319,7 +319,7 @@ static GstElement* findVideoDecoder(GstElement *element)
+                 case GST_ITERATOR_OK:
+                 {
+                     GstElement *next = GST_ELEMENT(g_value_get_object(&item));
+-                    done = (re = findVideoDecoder(next));
++                    done = (re = findElement(next, search));
+                     g_value_reset (&item);
+                     break;
+                 }
+@@ -334,8 +334,13 @@ static GstElement* findVideoDecoder(GstElement *element)
+         }
+         g_value_unset (&item);
+         gst_iterator_free(it);
+-    } else if (GST_IS_VIDEO_DECODER(element))
++    } else if (g_strstr_len(gst_element_get_name(element), search.length(), search.data())) {
++        GST_DEBUG("Element: %s", gst_element_get_name(element));
+         re = element;
++    } else {
++        GST_DEBUG("Element: %s", gst_element_get_name(element));
++    }
++
+     return re;
+ }
+ #endif
+@@ -389,7 +394,7 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
+ #if PLATFORM(BCM_NEXUS)
+     // implement getting pts time from broadcom decoder directly for seek functionality
+     gint64 currentPts = -1;
+-    /*GstElement**/ videoDec = findVideoDecoder(m_pipeline.get());
++    /*GstElement*/ videoDec = findElement(m_pipeline.get(), "brcmvideodecoder");
+     const char* videoPtsPropertyName = "video_pts";
+     if (videoDec)
+         g_object_get(videoDec, videoPtsPropertyName, &currentPts, nullptr);
+@@ -771,6 +776,25 @@ void MediaPlayerPrivateGStreamer::audioChangedCallback(MediaPlayerPrivateGStream
+     player->m_notifier->notify(MainThreadNotification::AudioChanged, [player] { player->notifyPlayerOfAudio(); });
+ }
+ 
++void MediaPlayerPrivateGStreamer::streamUnderflowCallback(MediaPlayerPrivateGStreamer* player)
++{
++    player->streamUnderflow();
++    GST_DEBUG("Stream Underflow callback has been called");
++}
++
++void MediaPlayerPrivateGStreamer::streamUnderflow()
++{
++    //TODO: So far, raise the underflow if there are two consecutive signals
++    // Reassure one from video decoder and the other from audio decoder!
++    GstState state;
++    gst_element_get_state(m_pipeline.get(), &state, nullptr, 0);
++    if (state == GST_STATE_PLAYING && (++m_underflowCounter > 1)) {
++        m_isEndReached = true;
++        m_underflowCounter = 0;
++    }
++    GST_DEBUG("Stream Underflow has been called: m_underflowCounter :%d", m_underflowCounter);
++}
++
+ void MediaPlayerPrivateGStreamer::notifyPlayerOfAudio()
+ {
+     if (UNLIKELY(!m_pipeline || !m_source))
+@@ -1074,6 +1098,15 @@ void MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
+         }
+ #endif
+ 
++#if PLATFORM(BCM_NEXUS) 
++        if (g_strstr_len(GST_MESSAGE_SRC_NAME(message), 16, "brcmaudiodecoder") || g_strstr_len(GST_MESSAGE_SRC_NAME(message), 16, "brcmvideodecoder")) {
++            if (currentState == GST_STATE_NULL && newState == GST_STATE_READY) {
++                g_signal_connect_swapped(GST_MESSAGE_SRC(message), "buffer-underflow-callback", G_CALLBACK(streamUnderflowCallback), this);
++                GST_DEBUG("It is %s !!! connect signal",GST_MESSAGE_SRC_NAME(message));
++            }
++        }
++#endif
++
+         if (!messageSourceIsPlaybin || m_delayingLoad)
+             break;
+         updateStates();
+@@ -1659,6 +1692,7 @@ void MediaPlayerPrivateGStreamer::updateStates()
+ 
+         bool didBuffering = m_buffering;
+ 
++         m_underflowCounter = 0;
+         // Update ready and network states.
+         switch (state) {
+         case GST_STATE_NULL:
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
+index 79e11bd..7de3f44 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
+@@ -211,12 +211,15 @@ protected:
+     void ensureAudioSourceProvider();
+     void setAudioStreamProperties(GObject*);
+ 
++    virtual void streamUnderflow();
++
+     static void setAudioStreamPropertiesCallback(MediaPlayerPrivateGStreamer*, GObject*);
+ 
+     static void sourceChangedCallback(MediaPlayerPrivateGStreamer*);
+     static void videoChangedCallback(MediaPlayerPrivateGStreamer*);
+     static void videoSinkCapsChangedCallback(MediaPlayerPrivateGStreamer*);
+     static void audioChangedCallback(MediaPlayerPrivateGStreamer*);
++    static void streamUnderflowCallback(MediaPlayerPrivateGStreamer*);
+ #if ENABLE(VIDEO_TRACK)
+     static void textChangedCallback(MediaPlayerPrivateGStreamer*);
+     static GstFlowReturn newTextSampleCallback(MediaPlayerPrivateGStreamer*);
+@@ -247,6 +250,7 @@ private:
+     URL m_url;
+     bool m_preservesPitch;
+     mutable double m_lastQuery;
++    uint8_t m_underflowCounter;
+ #if ENABLE(WEB_AUDIO)
+     std::unique_ptr<AudioSourceProviderGStreamer> m_audioSourceProvider;
+ #endif
+diff --git a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
+index a65bf63..1b2eef6 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.cpp
+@@ -687,6 +689,16 @@ void MediaPlayerPrivateGStreamerMSE::asyncStateChangeDone()
+         updateStates();
+ }
+ 
++void MediaPlayerPrivateGStreamerMSE::streamUnderflow()
++{
++    GST_DEBUG("Stream Underflow has been called");
++    MediaPlayerPrivateGStreamer::streamUnderflow();
++
++    m_cachedPosition = m_mediaTimeDuration;
++    m_durationAtEOS = m_mediaTimeDuration;
++}
++
++
+ bool MediaPlayerPrivateGStreamerMSE::isTimeBuffered(const MediaTime &time) const
+ {
+     bool result = m_mediaSource && m_mediaSource->hasBufferedTime(time);
+diff --git a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.h b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.h
+index 4066db2..23d5876 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.h
++++ b/Source/WebCore/platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.h
+@@ -105,6 +105,7 @@ private:
+ 
+     // FIXME: Reduce code duplication.
+     void updateStates() override;
++    void streamUnderflow() override;
+ 
+     bool doSeek(const MediaTime&, float, GstSeekFlags) override;
+     bool doSeek();

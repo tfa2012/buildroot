@@ -43,8 +43,26 @@ define NETFLIX43_INSTALL_STAGING_CMDS
    echo 'NETFLIX43 IN INSTALL STAGING'
 endef
 
+NETFLIX43_EXEC_DIR = $(TARGET_DIR)/root/netflix43
+NETFLIX43_DATA_DIR = $(NETFLIX43_EXEC_DIR)/data
+
 define NETFLIX43_INSTALL_TARGET_CMDS
-   echo 'NETFLIX43 IN INSTALL TARGET'
+   mkdir -p $(NETFLIX43_EXEC_DIR)
+   mkdir -p $(NETFLIX43_DATA_DIR)
+   cp $(NETFLIX43_DIR)/netflix/src/platform/gibbon/netflix $(NETFLIX43_EXEC_DIR)
+   cp -r $(NETFLIX43_DIR)/netflix/src/platform/gibbon/data/* $(NETFLIX43_DATA_DIR)
+   cp -r $(NETFLIX43_DIR)/netflix/resources/configuration/* $(NETFLIX43_DATA_DIR)/etc/conf/
+   cp $(NETFLIX43_DIR)/partner/eventloop/directfb/eventloop.xml $(NETFLIX43_DATA_DIR)/etc/conf/
+   cp $(NETFLIX43_DIR)/partner/graphics/directfb/graphics.xml $(NETFLIX43_DATA_DIR)/etc/conf/
+   cp $(NETFLIX43_DIR)/netflix/src/platform/gibbon/resources/configuration/* $(NETFLIX43_DATA_DIR)/etc/conf/
+   mkdir -p $(NETFLIX43_DATA_DIR)/etc/certs
+   cp $(NETFLIX43_DIR)/netflix/resources/etc/certs/ui_ca.pem $(NETFLIX43_DATA_DIR)/etc/certs
+   cp -r $(NETFLIX43_DIR)/netflix/resources/etc/keys $(NETFLIX43_DATA_DIR)/etc/
+   cp $(NETFLIX43_DIR)/netflix/src/platform/gibbon/resources/gibbon/fonts/fonts.xml $(NETFLIX43_DATA_DIR)/fonts
+   rm -f $(NETFLIX43_DATA_DIR)/dpi
+   mkdir -p $(NETFLIX43_DATA_DIR)/dpi
+   ln -s /etc/playready/ $(NETFLIX43_DATA_DIR)/dpi/playready
 endef
 
 $(eval $(cmake-package))
+

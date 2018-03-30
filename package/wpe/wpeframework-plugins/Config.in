@@ -283,6 +283,10 @@ config BR2_PACKAGE_WPEFRAMEWORK_WEBKITBROWSER_TRANSPARENT
 	bool "transparent"
 	default false
 
+config BR2_PACKAGE_WPEFRAMEWORK_WEBKITBROWSER_WINDOWCLOSE
+       bool "windowclose"
+       default false
+
 config BR2_PACKAGE_WPEFRAMEWORK_YOUTUBE
 	depends on BR2_PACKAGE_WPEFRAMEWORK_WEBKITBROWSER
 	bool "youtube"

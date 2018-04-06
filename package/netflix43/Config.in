@@ -16,7 +16,54 @@ config BR2_PACKAGE_NETFLIX43
 	select BR2_PACKAGE_TREMOR
 	select BR2_PACKAGE_LIBVORBIS
 	select BR2_PACKAGE_LIBOGG
+	select BR2_PACKAGE_NGHTTP2
 	select BR2_PACKAGE_FFMPEG
 	help
 	  Netflix5
+
+if BR2_PACKAGE_NETFLIX43
+
+menu "Extra options"
+
+choice
+	bool "Application type"
+	default BR2_PACKAGE_NETFLIX43_APP
+	help
+	  Choose application type.
+
+config BR2_PACKAGE_NETFLIX43_APP
+	bool "executable"
+	help
+	  Create Netflix standalone app.
+
+config BR2_PACKAGE_NETFLIX43_LIB
+	bool "library"
+	help
+	  Create Netflix library.
+
+endchoice
+
+config BR2_PACKAGE_NETFLIX43_KEYMAP
+	string "keymap"
+	help
+	  Install custom keymap
+
+config BR2_PACKAGE_NETFLIX43_GST_GL
+	bool "gl"
+	depends on BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_GL
+	default y
+
+config BR2_PACKAGE_NETFLIX43_MARVEL
+	bool "marvel"
+	depends on BR2_PACKAGE_MARVELL_AMPSDK
+	default n
+
+config BR2_PACKAGE_NETFLIX43_WESTEROS_SINK
+	bool "westeros-sink"
+	depends on BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR
+	default n
+
+endmenu
+
+endif
 

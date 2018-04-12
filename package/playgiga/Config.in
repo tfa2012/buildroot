@@ -1,0 +1,9 @@
+config BR2_PACKAGE_PLAYGIGA
+	bool "playgiga"
+	select BR2_PACKAGE_FFMPEG
+	select BR2_PACKAGE_SDL2
+	select BR2_PACKAGE_OPENAL
+	select BR2_PACKAGE_LIBCURL
+	help
+	  PlayGiga SDK.
+

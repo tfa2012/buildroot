@@ -1,0 +1,13 @@
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 0a875d2..b9c28ff 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -356,7 +356,7 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
+         return duration.isInvalid() ? MediaTime::zeroTime() : duration;
+     }
+ 
+-    double now = WTF::currentTime();
++    double now(WTF::monotonicallyIncreasingTime());
+     if (m_lastQuery > -1 && ((now - m_lastQuery) < 0.25) && m_cachedPosition.isValid())
+         return m_cachedPosition;
+ 

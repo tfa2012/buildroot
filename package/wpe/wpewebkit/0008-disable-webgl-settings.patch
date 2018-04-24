@@ -1,0 +1,13 @@
+diff --git a/Source/WebKit/UIProcess/API/wpe/WPEView.cpp b/Source/WebKit/UIProcess/API/wpe/WPEView.cpp
+index 7ee38dd..7f97d57 100644
+--- a/Source/WebKit/UIProcess/API/wpe/WPEView.cpp
++++ b/Source/WebKit/UIProcess/API/wpe/WPEView.cpp
+@@ -62,7 +62,7 @@ View::View(struct wpe_view_backend* backend, const API::PageConfiguration& baseC
+         preferences->setAcceleratedCompositingEnabled(true);
+         preferences->setForceCompositingMode(true);
+         preferences->setAccelerated2dCanvasEnabled(true);
+-        preferences->setWebGLEnabled(true);
++       //preferences->setWebGLEnabled(true);
+         preferences->setDeveloperExtrasEnabled(true);
+     }
+

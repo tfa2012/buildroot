@@ -67,7 +67,7 @@ index 0a875d2..c1ffe96 100644
 +    }
 +
 +    GST_DEBUG("BRCM Video Position %" GST_TIME_FORMAT "BRCM Audio Position %" GST_TIME_FORMAT, GST_TIME_ARGS(position), GST_TIME_ARGS(audioPosition));
-+    if (audioPosition != GST_CLOCK_TIME_NONE)
++    if (audioPosition != GST_CLOCK_TIME_NONE && position != GST_CLOCK_TIME_NONE)
 +        position = audioPosition;
  #else
      videoDec = m_pipeline.get();

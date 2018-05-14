@@ -1,5 +1,5 @@
 diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
-index 0a875d2..c1ffe96 100644
+index 0a875d2..347fcc1 100644
 --- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
 +++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
 @@ -306,8 +306,7 @@ void MediaPlayerPrivateGStreamer::commitLoad()
@@ -45,7 +45,7 @@ index 0a875d2..c1ffe96 100644
      // Position is only available if no async state change is going on and the state is either paused or playing.
      gint64 position = GST_CLOCK_TIME_NONE;
      GstElement* videoDec = nullptr;
-@@ -370,37 +376,44 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
+@@ -370,16 +376,38 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
      g_object_get(m_pipeline.get(), "video-sink", &videoDec, nullptr);
      if (!GST_IS_ELEMENT(videoDec))
          return MediaTime::zeroTime();
@@ -85,10 +85,10 @@ index 0a875d2..c1ffe96 100644
      GstClockTime gstreamerPosition = static_cast<GstClockTime>(position);
      if (GST_CLOCK_TIME_IS_VALID(gstreamerPosition))
          playbackPosition = MediaTime(gstreamerPosition, GST_SECOND);
-     else if (m_canFallBackToLastFinishedSeekPosition)
+@@ -387,16 +415,6 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
          playbackPosition = m_seekTime;
  
--#if PLATFORM(BCM_NEXUS)
+ #if PLATFORM(BCM_NEXUS)
 -    // implement getting pts time from broadcom decoder directly for seek functionality
 -    gint64 currentPts = -1;
 -    /*GstElement**/ videoDec = findVideoDecoder(m_pipeline.get());
@@ -99,10 +99,6 @@ index 0a875d2..c1ffe96 100644
 -        playbackPosition = MediaTime(((currentPts * GST_MSECOND) / 45), GST_SECOND);
 -        GST_DEBUG("Using position reported by the video decoder: %s", toString(playbackPosition).utf8().data());
 -    }
--    if (!playbackPosition && m_seekTime.isValid())
--        playbackPosition = m_seekTime;
--#endif
--
-     m_cachedPosition = playbackPosition;
-     return playbackPosition;
- }
+     if (!playbackPosition && m_seekTime.isValid())
+         playbackPosition = m_seekTime;
+ #endif

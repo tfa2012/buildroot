@@ -1,0 +1,28 @@
+From 4434ea83a91f1d4f0ee6b2c5eb03ff7ec28b2c79 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Enrique=20Oca=C3=B1a=20Gonz=C3=A1lez?= <eocanha@igalia.com>
+Date: Tue, 17 Jan 2017 18:43:24 +0000
+Subject: [PATCH 2/4] Fix decoder flushing
+
+---
+ omx/gstomx.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/omx/gstomx.c b/omx/gstomx.c
+index b16cf50..47ebd2d 100644
+--- a/omx/gstomx.c
++++ b/omx/gstomx.c
+@@ -1646,10 +1646,7 @@ gst_omx_port_set_flushing (GstOMXPort * port, GstClockTime timeout,
+     signalled = TRUE;
+     last_error = OMX_ErrorNone;
+     gst_omx_component_handle_messages (comp);
+-    while (!port->flushed &&
+-        (port->buffers
+-            && port->buffers->len >
+-            g_queue_get_length (&port->pending_buffers))) {
++    while (!port->flushed) {
+       signalled = gst_omx_component_wait_message (comp, timeout);
+       if (signalled)
+         gst_omx_component_handle_messages (comp);
+-- 
+1.8.3.2
+

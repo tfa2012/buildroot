@@ -1,8 +1,17 @@
+From e0dd3b8160615d233897870ddc4becce68388676 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Enrique=20Oca=C3=B1a=20Gonz=C3=A1lez?= <eocanha@igalia.com>
+Date: Tue, 17 Jan 2017 18:43:57 +0000
+Subject: [PATCH 3/4] No timeout on get state
+
+---
+ omx/gstomxvideodec.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
 diff --git a/omx/gstomxvideodec.c b/omx/gstomxvideodec.c
-index 0d4e7a1..a0d9c74 100644
+index 52806bc..ae04e4a 100644
 --- a/omx/gstomxvideodec.c
 +++ b/omx/gstomxvideodec.c
-@@ -1697,9 +1697,9 @@ gst_omx_video_dec_stop (GstVideoDecoder * decoder)
+@@ -2006,9 +2006,9 @@ gst_omx_video_dec_stop (GstVideoDecoder * decoder)
    g_cond_broadcast (&self->drain_cond);
    g_mutex_unlock (&self->drain_lock);
  
@@ -14,3 +23,6 @@ index 0d4e7a1..a0d9c74 100644
  #endif
  
    gst_buffer_replace (&self->codec_data, NULL);
+-- 
+1.8.3.2
+

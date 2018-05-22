@@ -1,7 +1,7 @@
-From 4f3cb1a1b4403d42a60a7257d49b05dd28812eaf Mon Sep 17 00:00:00 2001
+From 7bbf2786072005e58cfcf38375f921978c7c6a6a Mon Sep 17 00:00:00 2001
 From: Xabier Rodriguez Calvar <calvaris@igalia.com>
 Date: Wed, 21 Jun 2017 17:59:21 +0200
-Subject: [PATCH 6/8] qtdemux: add context for a preferred protection
+Subject: [PATCH 2/7] qtdemux: add context for a preferred protection
 
 qtdemux selected the first system corresponding to a working GStreamer
 decryptor. With this change, before selecting that decryptor, qtdemux
@@ -36,10 +36,10 @@ https://bugzilla.gnome.org/show_bug.cgi?id=770107
  2 files changed, 195 insertions(+), 6 deletions(-)
 
 diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
-index 4cbcaedb2..2091374c6 100644
+index 705bdf7..da22463 100644
 --- a/gst/isomp4/qtdemux.c
 +++ b/gst/isomp4/qtdemux.c
-@@ -490,6 +490,8 @@ static GstIndex *gst_qtdemux_get_index (GstElement * element);
+@@ -511,6 +511,8 @@ static GstIndex *gst_qtdemux_get_index (GstElement * element);
  #endif
  static GstStateChangeReturn gst_qtdemux_change_state (GstElement * element,
      GstStateChange transition);
@@ -48,7 +48,7 @@ index 4cbcaedb2..2091374c6 100644
  static gboolean qtdemux_sink_activate (GstPad * sinkpad, GstObject * parent);
  static gboolean qtdemux_sink_activate_mode (GstPad * sinkpad,
      GstObject * parent, GstPadMode mode, gboolean active);
-@@ -576,6 +578,7 @@ gst_qtdemux_class_init (GstQTDemuxClass * klass)
+@@ -600,6 +602,7 @@ gst_qtdemux_class_init (GstQTDemuxClass * klass)
    gstelement_class->set_index = GST_DEBUG_FUNCPTR (gst_qtdemux_set_index);
    gstelement_class->get_index = GST_DEBUG_FUNCPTR (gst_qtdemux_get_index);
  #endif
@@ -56,15 +56,15 @@ index 4cbcaedb2..2091374c6 100644
  
    gst_tag_register_musicbrainz_tags ();
  
-@@ -634,6 +637,7 @@ gst_qtdemux_init (GstQTDemux * qtdemux)
+@@ -658,6 +661,7 @@ gst_qtdemux_init (GstQTDemux * qtdemux)
    qtdemux->cenc_aux_info_sizes = NULL;
    qtdemux->cenc_aux_sample_count = 0;
    qtdemux->protection_system_ids = NULL;
 +  qtdemux->preferred_protection_system_id = NULL;
    g_queue_init (&qtdemux->protection_event_queue);
    gst_segment_init (&qtdemux->segment, GST_FORMAT_TIME);
-   qtdemux->flowcombiner = gst_flow_combiner_new ();
-@@ -2022,6 +2026,10 @@ gst_qtdemux_reset (GstQTDemux * qtdemux, gboolean hard)
+   qtdemux->tag_list = gst_tag_list_new_empty ();
+@@ -2121,6 +2125,10 @@ gst_qtdemux_reset (GstQTDemux * qtdemux, gboolean hard)
        g_ptr_array_free (qtdemux->protection_system_ids, TRUE);
        qtdemux->protection_system_ids = NULL;
      }
@@ -75,7 +75,7 @@ index 4cbcaedb2..2091374c6 100644
    } else if (qtdemux->mss_mode) {
      gst_flow_combiner_reset (qtdemux->flowcombiner);
      for (n = 0; n < qtdemux->n_streams; n++)
-@@ -2485,6 +2493,28 @@ gst_qtdemux_change_state (GstElement * element, GstStateChange transition)
+@@ -2607,6 +2615,28 @@ gst_qtdemux_change_state (GstElement * element, GstStateChange transition)
  }
  
  static void
@@ -104,7 +104,7 @@ index 4cbcaedb2..2091374c6 100644
  qtdemux_parse_ftyp (GstQTDemux * qtdemux, const guint8 * buffer, gint length)
  {
    /* counts as header data */
-@@ -3673,6 +3703,8 @@ qtdemux_parse_pssh (GstQTDemux * qtdemux, GNode * node)
+@@ -3847,6 +3877,8 @@ qtdemux_parse_pssh (GstQTDemux * qtdemux, GNode * node)
    event = gst_event_new_protection (sysid_string, pssh,
        (parent_box_type == FOURCC_moov) ? "isobmff/moov" : "isobmff/moof");
    for (i = 0; i < qtdemux->n_streams; ++i) {
@@ -113,7 +113,7 @@ index 4cbcaedb2..2091374c6 100644
      g_queue_push_tail (&qtdemux->streams[i]->protection_scheme_event_queue,
          gst_event_ref (event));
    }
-@@ -5380,6 +5412,8 @@ gst_qtdemux_decorate_and_push_buffer (GstQTDemux * qtdemux,
+@@ -5563,6 +5595,8 @@ gst_qtdemux_decorate_and_push_buffer (GstQTDemux * qtdemux,
      GstEvent *event;
  
      while ((event = g_queue_pop_head (&stream->protection_scheme_event_queue))) {
@@ -122,7 +122,7 @@ index 4cbcaedb2..2091374c6 100644
        gst_pad_push_event (stream->pad, event);
      }
  
-@@ -7475,11 +7509,141 @@ qtdemux_do_allocation (GstQTDemux * qtdemux, QtDemuxStream * stream)
+@@ -7757,11 +7791,141 @@ qtdemux_do_allocation (GstQTDemux * qtdemux, QtDemuxStream * stream)
  }
  
  static gboolean
@@ -265,7 +265,7 @@ index 4cbcaedb2..2091374c6 100644
  
    g_return_val_if_fail (qtdemux != NULL, FALSE);
    g_return_val_if_fail (stream != NULL, FALSE);
-@@ -7494,17 +7658,41 @@ gst_qtdemux_configure_protected_caps (GstQTDemux * qtdemux,
+@@ -7777,17 +7941,41 @@ gst_qtdemux_configure_protected_caps (GstQTDemux * qtdemux,
          "cenc protection system information has been found");
      return FALSE;
    }
@@ -309,14 +309,14 @@ index 4cbcaedb2..2091374c6 100644
 +  GST_DEBUG_OBJECT (qtdemux, "selected protection system is %s",
 +      selected_system);
 +
-   s = gst_caps_get_structure (stream->caps, 0);
+   s = gst_caps_get_structure (CUR_STREAM (stream)->caps, 0);
    if (!gst_structure_has_name (s, "application/x-cenc")) {
      gst_structure_set (s,
 diff --git a/gst/isomp4/qtdemux.h b/gst/isomp4/qtdemux.h
-index 771ddcc5b..ba5f70cb2 100644
+index ad4da3e..0793723 100644
 --- a/gst/isomp4/qtdemux.h
 +++ b/gst/isomp4/qtdemux.h
-@@ -154,6 +154,7 @@ struct _GstQTDemux {
+@@ -151,6 +151,7 @@ struct _GstQTDemux {
    guint64 cenc_aux_info_offset;
    guint8 *cenc_aux_info_sizes;
    guint32 cenc_aux_sample_count;
@@ -325,5 +325,5 @@ index 771ddcc5b..ba5f70cb2 100644
  
    /*
 -- 
-2.11.0
+1.8.3.2
 

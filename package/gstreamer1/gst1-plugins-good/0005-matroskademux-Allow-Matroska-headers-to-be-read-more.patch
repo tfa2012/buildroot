@@ -1,7 +1,7 @@
-From a45aa9ddbdf441ad9d9c347a1bad98414fc6de6a Mon Sep 17 00:00:00 2001
+From b5d7c1e1f8cac28bc6105db07e3795ac6e42e4be Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Alicia=20Boya=20Garc=C3=ADa?= <ntrrgc@gmail.com>
 Date: Thu, 30 Nov 2017 20:44:23 +0100
-Subject: [PATCH 1/2] matroskademux: Allow Matroska headers to be read more
+Subject: [PATCH 5/7] matroskademux: Allow Matroska headers to be read more
  than once
 
 This is necessary for MSE, where a new MSE initialization segment may be
@@ -23,10 +23,10 @@ This patch has been splitted from the original patch from eocanha in [2].
  1 file changed, 5 insertions(+)
 
 diff --git a/gst/matroska/matroska-demux.c b/gst/matroska/matroska-demux.c
-index e419a70..79903d1 100644
+index f3bf763..3f329ed 100644
 --- a/gst/matroska/matroska-demux.c
 +++ b/gst/matroska/matroska-demux.c
-@@ -4391,6 +4391,11 @@ gst_matroska_demux_parse_id (GstMatroskaDemux * demux, guint32 id,
+@@ -4659,6 +4659,11 @@ gst_matroska_demux_parse_id (GstMatroskaDemux * demux, guint32 id,
      case GST_MATROSKA_READ_STATE_DATA:
      case GST_MATROSKA_READ_STATE_SEEK:
        switch (id) {

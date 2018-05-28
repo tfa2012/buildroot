@@ -1,17 +1,17 @@
-From 2553ac09935a8740e2f79f172cbca0d296960fb4 Mon Sep 17 00:00:00 2001
+From 7921d2fd18b73c45429543e59dd44c5bf6e592d8 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Enrique=20Oca=C3=B1a=20Gonz=C3=A1lez?= <eocanha@igalia.com>
-Date: Wed, 23 May 2018 15:40:30 +0000
-Subject: [PATCH 4/5] mssdemux: Reduce SmoothStreaming latency on live streams
+Date: Wed, 25 Apr 2018 08:32:20 +0000
+Subject: [PATCH] mssdemux: Reduce SmoothStreaming latency on live streams
 
 by skipping the fragments affected by dvr_window, minus the ones reserved by
-look_ahead_fragment_count plus some margin. Otherwise, the playback would
-start at the begining of the dvr_window, creating a large latency (typically 1 minute).
+look_ahead_fragment_count. Otherwise, the playback would start at the begining
+of the dvr_window, creating a large latency (typically 1 minute).
 ---
- ext/smoothstreaming/gstmssmanifest.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+ ext/smoothstreaming/gstmssmanifest.c | 37 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 35 insertions(+), 2 deletions(-)
 
 diff --git a/ext/smoothstreaming/gstmssmanifest.c b/ext/smoothstreaming/gstmssmanifest.c
-index cc18d42..f54a0ce 100644
+index 291080a..e5ecf5a 100644
 --- a/ext/smoothstreaming/gstmssmanifest.c
 +++ b/ext/smoothstreaming/gstmssmanifest.c
 @@ -249,6 +249,7 @@ _gst_mss_stream_init (GstMssManifest * manifest, GstMssStream * stream,
@@ -22,7 +22,7 @@ index cc18d42..f54a0ce 100644
  
    gst_mss_fragment_list_builder_init (&builder);
  
-@@ -269,9 +270,35 @@ _gst_mss_stream_init (GstMssManifest * manifest, GstMssStream * stream,
+@@ -266,10 +267,34 @@ _gst_mss_stream_init (GstMssManifest * manifest, GstMssStream * stream,
    stream->has_live_fragments = manifest->is_live
        && manifest->look_ahead_fragment_count;
  
@@ -33,11 +33,13 @@ index cc18d42..f54a0ce 100644
 +
    for (iter = node->children; iter; iter = iter->next) {
      if (node_has_type (iter, MSS_NODE_STREAM_FRAGMENT)) {
-       gst_mss_fragment_list_builder_add (&builder, iter);
+-      if (!stream->has_live_fragments || !builder.fragments)
+-        gst_mss_fragment_list_builder_add (&builder, iter);
++      gst_mss_fragment_list_builder_add (&builder, iter);
 +
 +      if (stream->has_live_fragments) {
 +        /* Build enough fragments to hold dvr_window minus
-+         * look_ahead_fragment_count plus some additional margin
++         * look_ahead_fragment_count
 +         */
 +        GstClockTime accumulated_time, look_ahead_estimation_time;
 +
@@ -54,11 +56,10 @@ index cc18d42..f54a0ce 100644
 +            || look_ahead_estimation_time >= dvr_window)
 +            break;
 +      }
-+
      } else if (node_has_type (iter, MSS_NODE_STREAM_QUALITY)) {
        GstMssStreamQuality *quality = gst_mss_stream_quality_new (iter);
        stream->qualities = g_list_prepend (stream->qualities, quality);
-@@ -281,6 +308,13 @@ _gst_mss_stream_init (GstMssManifest * manifest, GstMssStream * stream,
+@@ -279,9 +304,17 @@ _gst_mss_stream_init (GstMssManifest * manifest, GstMssStream * stream,
    }
  
    if (stream->has_live_fragments) {
@@ -69,9 +70,13 @@ index cc18d42..f54a0ce 100644
 +    skipped = g_list_remove_link(builder.fragments, builder.fragments);
 +    g_list_free_full (skipped, g_free);
 +
-     stream->live_adapter = gst_adapter_new ();
+     g_queue_init (&stream->live_fragments);
+     g_queue_push_tail (&stream->live_fragments, builder.fragments->data);
+     stream->current_fragment = g_queue_peek_head_link (&stream->live_fragments);
++    stream->fragments = NULL;
    }
  
+   if (builder.fragments) {
 -- 
-2.7.4
+1.8.3.2
 

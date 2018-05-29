@@ -1,5 +1,14 @@
+From 6f66e11ff449506442f785b77fdb351847a3c55c Mon Sep 17 00:00:00 2001
+From: wouterlucas <wouter@wouterlucas.com>
+Date: Wed, 2 May 2018 13:08:14 -0700
+Subject: [PATCH 5/5] Add mpegdash live seek fix
+
+---
+ ext/dash/gstmpdparser.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
 diff --git a/ext/dash/gstmpdparser.c b/ext/dash/gstmpdparser.c
-index 6535cae..f587a13 100644
+index c0bbecd..d3e1d9b 100644
 --- a/ext/dash/gstmpdparser.c
 +++ b/ext/dash/gstmpdparser.c
 @@ -5040,6 +5040,7 @@ gst_mpd_client_get_next_fragment_timestamp (GstMpdClient * client,
@@ -20,3 +29,6 @@ index 6535cae..f587a13 100644
    }
  
    return TRUE;
+-- 
+1.8.3.2
+

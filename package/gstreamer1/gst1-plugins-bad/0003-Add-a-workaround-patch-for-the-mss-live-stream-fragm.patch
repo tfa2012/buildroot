@@ -1,7 +1,7 @@
 From f2aee9a301edebdf79faf9565ff1ba8508c8d81b Mon Sep 17 00:00:00 2001
 From: Zan Dobersek <zdobersek@igalia.com>
 Date: Thu, 10 Nov 2016 02:17:01 -0800
-Subject: [PATCH 3/5] Add a workaround patch for the mss live stream fragments
+Subject: [PATCH 3/7] Add a workaround patch for the mss live stream fragments
  issue
 
 ---
@@ -23,5 +23,5 @@ index a591d29..cc18d42 100644
  
    gst_mss_fragment_list_builder_init (&builder);
 -- 
-1.8.3.2
+2.7.4
 

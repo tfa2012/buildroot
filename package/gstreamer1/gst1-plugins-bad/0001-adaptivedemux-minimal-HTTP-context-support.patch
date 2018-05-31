@@ -1,7 +1,7 @@
 From 7dabf7f08019ab9749567fd124e92e285f0d3340 Mon Sep 17 00:00:00 2001
 From: Philippe Normand <philn@igalia.com>
 Date: Wed, 28 Oct 2015 11:52:49 +0100
-Subject: [PATCH 1/5] adaptivedemux: minimal HTTP context support
+Subject: [PATCH 1/7] adaptivedemux: minimal HTTP context support
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -100,5 +100,5 @@ index 0516981..0900e47 100644
    gst_element_set_bus (GST_ELEMENT (downloader->priv->urisrc),
        downloader->priv->bus);
 -- 
-1.8.3.2
+2.7.4
 

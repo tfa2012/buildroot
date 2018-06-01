@@ -23,5 +23,5 @@ index a591d29..cc18d42 100644
  
    gst_mss_fragment_list_builder_init (&builder);
 -- 
-2.7.4
+1.8.3.2
 

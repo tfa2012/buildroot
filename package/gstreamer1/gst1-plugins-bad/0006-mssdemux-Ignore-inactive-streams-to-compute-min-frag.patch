@@ -1,4 +1,4 @@
-From 94e7f503eef2546e3dc0b0a7f2439eefe097080f Mon Sep 17 00:00:00 2001
+From ade778f768322136ec88da049e511a04dfda2184 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Enrique=20Oca=C3=B1a=20Gonz=C3=A1lez?= <eocanha@igalia.com>
 Date: Thu, 31 May 2018 16:17:12 +0200
 Subject: [PATCH 6/7] mssdemux: Ignore inactive streams to compute min fragment
@@ -9,7 +9,7 @@ Subject: [PATCH 6/7] mssdemux: Ignore inactive streams to compute min fragment
  1 file changed, 3 insertions(+)
 
 diff --git a/ext/smoothstreaming/gstmssmanifest.c b/ext/smoothstreaming/gstmssmanifest.c
-index f54a0ce..ef396e4 100644
+index 93a171c..e9bca1b 100644
 --- a/ext/smoothstreaming/gstmssmanifest.c
 +++ b/ext/smoothstreaming/gstmssmanifest.c
 @@ -1040,6 +1040,9 @@ gst_mss_manifest_get_min_fragment_duration (GstMssManifest * manifest)
@@ -23,5 +23,5 @@ index f54a0ce..ef396e4 100644
      if (iter_dur != GST_CLOCK_TIME_NONE && iter_dur != 0) {
        if (GST_CLOCK_TIME_IS_VALID (dur)) {
 -- 
-2.7.4
+1.8.3.2
 

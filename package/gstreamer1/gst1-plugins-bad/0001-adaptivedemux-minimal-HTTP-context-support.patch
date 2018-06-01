@@ -100,5 +100,5 @@ index 0516981..0900e47 100644
    gst_element_set_bus (GST_ELEMENT (downloader->priv->urisrc),
        downloader->priv->bus);
 -- 
-2.7.4
+1.8.3.2
 

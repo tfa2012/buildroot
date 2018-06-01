@@ -1,4 +1,4 @@
-From 2553ac09935a8740e2f79f172cbca0d296960fb4 Mon Sep 17 00:00:00 2001
+From d416c350bf23a0dac498bbeea1187cb7cf83ba0c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Enrique=20Oca=C3=B1a=20Gonz=C3=A1lez?= <eocanha@igalia.com>
 Date: Wed, 23 May 2018 15:40:30 +0000
 Subject: [PATCH 4/7] mssdemux: Reduce SmoothStreaming latency on live streams
@@ -11,7 +11,7 @@ start at the begining of the dvr_window, creating a large latency (typically 1 m
  1 file changed, 34 insertions(+)
 
 diff --git a/ext/smoothstreaming/gstmssmanifest.c b/ext/smoothstreaming/gstmssmanifest.c
-index cc18d42..f54a0ce 100644
+index cc18d42..93a171c 100644
 --- a/ext/smoothstreaming/gstmssmanifest.c
 +++ b/ext/smoothstreaming/gstmssmanifest.c
 @@ -249,6 +249,7 @@ _gst_mss_stream_init (GstMssManifest * manifest, GstMssStream * stream,
@@ -48,7 +48,7 @@ index cc18d42..f54a0ce 100644
 +            + ((GstMssStreamFragment*)builder.fragments->data)->duration
 +            - first_fragment_time) * GST_SECOND / DEFAULT_TIMESCALE;
 +        look_ahead_estimation_time = accumulated_time
-+            * (builder.fragment_number + manifest->look_ahead_fragment_count + 5)
++            * (builder.fragment_number + manifest->look_ahead_fragment_count + 7)
 +            / builder.fragment_number;
 +        if (dvr_window == GST_CLOCK_TIME_NONE
 +            || look_ahead_estimation_time >= dvr_window)
@@ -73,5 +73,5 @@ index cc18d42..f54a0ce 100644
    }
  
 -- 
-2.7.4
+1.8.3.2
 

@@ -22,6 +22,16 @@ fi
 for i in "$@"
 do
 case "$i" in
+	--arm64)
+	if ! grep -qE '^arm_64bit=1' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
+		echo "Adding 'arm_64bit=1' to config.txt."
+		cat << __EOF__ >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+
+# Set to 64bit
+arm_64bit=1
+__EOF__
+	fi
+	;;
 	--add-pi3-miniuart-bt-overlay)
 	if ! grep -qE '^dtoverlay=pi3-miniuart-bt' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
 		echo "Adding 'dtoverlay=pi3-miniuart-bt' to config.txt (fixes ttyAMA0 serial console)."
@@ -88,6 +98,33 @@ arm_freq=1350
 gpu_freq=500
 sdram_freq=500
 over_voltage=5
+avoid_warnings=1
+__EOF__
+	fi
+	;;
+	--overclock-pi3+)
+	if ! grep -qE '^arm_freq=' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
+		echo "Adding 'overclock=pi3+' to config.txt."
+		cat << __EOF__ >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+
+# Overclock
+arm_freq=1450
+gpu_freq=560
+over_voltage=6
+force_turbo=1
+sdram_freq=720
+over_voltage_sdram=8
+sdram_schmoo=0x02000020
+avoid_warnings=1
+__EOF__
+	fi
+	;;
+	--overclock-avoid)
+	if ! grep -qE '^avoid_warnings=' "${BINARIES_DIR}/rpi-firmware/config.txt"; then
+		echo "Adding 'overclock=avoid' to config.txt."
+		cat << __EOF__ >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+
+# Overclock
 avoid_warnings=1
 __EOF__
 	fi

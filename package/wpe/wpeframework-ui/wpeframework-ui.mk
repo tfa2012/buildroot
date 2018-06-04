@@ -4,9 +4,8 @@
 #
 ################################################################################
 
-WPEFRAMEWORK_UI_VERSION = d7b707d4031d501a2d4d33896dce7393762d601f
-WPEFRAMEWORK_UI_SITE_METHOD = git
-WPEFRAMEWORK_UI_SITE = git@github.com:WebPlatformForEmbedded/WPEFrameworkUI.git
+WPEFRAMEWORK_UI_VERSION = eb28ebcaae03738a74e7bd143055a936c00de2bb
+WPEFRAMEWORK_UI_SITE = $(call github,WebPlatformForEmbedded,WPEFrameworkUI,$(WPEFRAMEWORK_UI_VERSION))
 WPEFRAMEWORK_UI_DEPENDENCIES = wpeframework wpeframework-plugins
 
 WPEFRAMEWORK_UI_INSTALL_STAGING = NO

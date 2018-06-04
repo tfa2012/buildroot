@@ -19,9 +19,13 @@ BCM_REFSW_VERSION = 16.3-1
 else ifeq ($(BR2_PACKAGE_BCM_REFSW_17_1),y)
 BCM_REFSW_VERSION = 17.1-1
 else ifeq ($(BR2_PACKAGE_BCM_REFSW_17_1_RDK),y)
-BCM_REFSW_VERSION = 17.1-2
+BCM_REFSW_VERSION = 17.1-4
 else ifeq ($(BR2_PACKAGE_BCM_REFSW_17_2),y)
 BCM_REFSW_VERSION = 17.2-1
+else ifeq ($(BR2_PACKAGE_BCM_REFSW_17_3),y)
+BCM_REFSW_VERSION = 17.3-1
+else ifeq ($(BR2_PACKAGE_BCM_REFSW_17_3_RDK),y)
+BCM_REFSW_VERSION = 17.3-2
 else ifeq ($(BR2_PACKAGE_BCM_REFSW_17_4),y)
 BCM_REFSW_VERSION = 17.4-1
 else
@@ -41,7 +45,7 @@ ifeq ($(BR2_PACKAGE_WESTEROS),y)
 	BCM_REFSW_DEPENDENCIES += wayland
 endif
 
-# SOC related info 
+# SOC related info
 include package/bcm-refsw/platforms.inc
 
 ifeq ($(BR2_TOOLCHAIN_HEADERS_AT_LEAST_3_14),y)
@@ -103,153 +107,7 @@ BCM_REFSW_IRMODE=23
 endif
 endif
 
-ifneq ($(BR2_PACKAGE_BCM_REFSW_GRAPHICS_HEAP_SIZE),)
-BCM_REFSW_GRAPHICS_HEAP_SIZE=$(call qstrip,$(BR2_PACKAGE_BCM_REFSW_GRAPHICS_HEAP_SIZE))
-endif
-
-ifneq ($(BR2_PACKAGE_BCM_REFSW_BOXMODE),)
-BCM_REFSW_BOXMODE=$(call qstrip,$(BR2_PACKAGE_BCM_REFSW_BOXMODE))
-endif
-
-define BCM_REFSW_BUILD_NEXUS
-	$(TARGET_CONFIGURE_OPTS) \
-	$(TARGET_MAKE_ENV) \
-	$(BCM_REFSW_CONF_OPTS) \
-	$(BCM_REFSW_MAKE_ENV) \
-		$(MAKE) -C $(@D)/nexus/build all \
-			$(BCM_REFSW_BUILD_ADDITIONS)
-endef
-
-define BCM_REFSW_BUILD_VCX
-
-	$(TARGET_CONFIGURE_OPTS) \
-	$(TARGET_MAKE_ENV) \
-	$(BCM_REFSW_CONF_OPTS) \
-	$(BCM_REFSW_MAKE_ENV) \
-		$(MAKE) -C ${BCM_REFSW_VCX}/driver -f V3DDriver.mk \
-			OBJDIR=${BCM_REFSW_OUTPUT}/rockford/middleware/v3d/driver/obj_${BCM_REFSW_PLATFORM}_release \
-			LIBDIR=${BCM_REFSW_BIN}
-	$(TARGET_CONFIGURE_OPTS) \
-	$(TARGET_MAKE_ENV) \
-	$(BCM_REFSW_CONF_OPTS) \
-	$(BCM_REFSW_MAKE_ENV) \
-		$(MAKE) -C ${BCM_REFSW_VCX}/platform/nexus -f platform_nexus.mk \
-			OBJDIR=${BCM_REFSW_OUTPUT}/rockford/middleware/v3d/platform/obj_${BCM_REFSW_PLATFORM}_release \
-			LIBDIR=${BCM_REFSW_BIN}
-endef
-
-define BCM_REFSW_BUILD_NXSERVER
-	$(TARGET_CONFIGURE_OPTS) \
-	$(TARGET_MAKE_ENV) \
-	$(BCM_REFSW_CONF_OPTS) \
-	$(BCM_REFSW_MAKE_ENV) \
-		$(MAKE) -C $(@D)/nexus/nxclient/server all \
-			LIBDIR=${BCM_REFSW_BIN}
-endef
-
-ifeq ($(BR2_PACKAGE_BCM_REFSW_NXCLIENT_EXAMPLES),y)
-define BCM_REFSW_BUILD_NXCLIENT_EXAMPLES
-	$(TARGET_CONFIGURE_OPTS) \
-	$(TARGET_MAKE_ENV) \
-	$(BCM_REFSW_CONF_OPTS) \
-	$(BCM_REFSW_MAKE_ENV) \
-		$(MAKE) -C $(@D)/nexus/nxclient/examples all \
-			LIBDIR=${BCM_REFSW_BIN}
-endef
-endif
-
-ifeq ($(BR2_PACKAGE_BCM_REFSW_PMLIB),y)
-define BCM_REFSW_BUILD_PMLIB
-    $(TARGET_CONFIGURE_OPTS) \
-    $(TARGET_MAKE_ENV) \
-    $(BCM_REFSW_CONF_OPTS) \
-    $(BCM_REFSW_MAKE_ENV) \
-        $(MAKE) -C $(@D)/BSEAV/lib/pmlib \
-            LIBDIR=${BCM_REFSW_BIN}
-endef
-endif
-
-ifeq ($(shell expr $(BCM_REFSW_VERSION) \>= 17.1),1)
-BCM_CUBE_DIR = /BSEAV/lib/gpu/applications/nexus/cube
-else
-BCM_CUBE_DIR = /rockford/applications/khronos/v3d/nexus/cube
-endif
-
-ifeq ($(BR2_PACKAGE_BCM_REFSW_EGLCUBE),y)
-define BCM_REFSW_BUILD_EGLCUBE
-	$(TARGET_CONFIGURE_OPTS) \
-	$(TARGET_MAKE_ENV) \
-	$(BCM_REFSW_CONF_OPTS) \
-	$(BCM_REFSW_MAKE_ENV) \
-               $(MAKE) -C $(@D)/$(BCM_CUBE_DIR) \
-			LIBDIR=${BCM_REFSW_BIN}
-endef
-endif
-
-
-# wayland-egl is needed only for westeros
-ifeq ($(BR2_PACKAGE_WESTEROS),y)
-	include package/bcm-refsw/wayland-egl.inc
-endif
-
-define BCM_REFSW_INSTALL_LIBS
-	$(INSTALL) -D $(BCM_REFSW_BIN)/libnexus.so $1/usr/lib/libnexus.so
-	$(INSTALL) -D $(BCM_REFSW_BIN)/libv3ddriver.so $1/usr/lib/libv3ddriver.so
-	$(INSTALL) -D $(BCM_REFSW_BIN)/libnxpl.so $1/usr/lib/libnxpl.so
-	$(INSTALL) -D $(BCM_REFSW_BIN)/libnxclient.so $1/usr/lib/libnxclient.so
-	cd $1/usr/lib && ln -sf libv3ddriver.so libEGL.so && ln -sf libv3ddriver.so libGLESv2.so
-endef
-
-ifeq ($(BR2_PACKAGE_BCM_REFSW_PMLIB),y)
-define BCM_REFSW_INSTALL_STAGING_PMLIB
-	$(INSTALL) -m 644 -D $(BCM_REFSW_OUTPUT)/BSEAV/lib/pmlib/libpmlib.a $(STAGING_DIR)/usr/lib/libpmlib.a
-	$(INSTALL) -m 644 $(BCM_REFSW_DIR)/BSEAV/lib/pmlib/$(BCM_PMLIB_VERSION)/pmlib.h $(STAGING_DIR)/usr/include/refsw
-endef
-endif
-
 ifeq ($(BCM_REFSW_PLATFORM_VC),vc5)
-define BCM_REFSW_INSTALL_EXTRA
-	$(INSTALL) -D -m 755 package/bcm-refsw/S11wakeup $1/etc/init.d/S11wakeup
-	$(INSTALL) -m 644 -D $(BCM_REFSW_BIN)/wakeup_drv.ko $1/lib/modules/wakeup_drv.ko
-endef
-endif
-
-define BCM_REFSW_INSTALL_STAGING_NXSERVER
-	   $(INSTALL) -D $(BCM_REFSW_BIN)/libnxclient.so $1/usr/lib/libnxclient.so
-endef
-
-ifeq ($(BR2_PACKAGE_BCM_WESTON),y)
-define BCM_REFSW_INSTALL_TARGET_NXSERVER_INIT
-endef
-else
-define BCM_REFSW_INSTALL_TARGET_NXSERVER_INIT
-	$(INSTALL) -D -m 755 package/bcm-refsw/S70nxserver $(TARGET_DIR)/etc/init.d/S70nxserver; \
-	sed -i 's/%IRMODE%/${BCM_REFSW_IRMODE}/g' $(TARGET_DIR)/etc/init.d/S70nxserver; \
-	sed -i 's/%GRAPHICS_HEAP_SIZE%/${BCM_REFSW_GRAPHICS_HEAP_SIZE}/g' $(TARGET_DIR)/etc/init.d/S70nxserver; \
-	sed -i 's/%BOXMODE%/${BCM_REFSW_BOXMODE}/g' $(TARGET_DIR)/etc/init.d/S70nxserver;
-endef
-endif
-
-# TODO: sort out installation of nxserver vs. WPEFramework compositor
-define BCM_REFSW_INSTALL_TARGET_NXSERVER
-	$(INSTALL) -D $(BCM_REFSW_BIN)/libnxclient.so $(1)/usr/lib/libnxclient.so
-	if [ "x" = "x" ]; then \
-		$(INSTALL) -m 755 -D $(BCM_REFSW_BIN)/nxserver $(1)/usr/bin/nxserver; \
-		$(BCM_REFSW_INSTALL_TARGET_NXSERVER_INIT) \
-	fi
-endef
-
-define BCM_REFSW_BUILD_CMDS
-	$(BCM_REFSW_BUILD_NEXUS)
-	$(BCM_REFSW_BUILD_NXSERVER)
-	$(BCM_REFSW_BUILD_NXCLIENT_EXAMPLES)
-	$(BCM_REFSW_BUILD_PMLIB)
-	$(BCM_REFSW_BUILD_VCX)
-	$(BCM_REFSW_BUILD_EGLCUBE)
-	$(BCM_REFSW_BUILD_WAYLAND_EGL)
-endef
-
-ifeq ($(BCM_REFSW_PLATFORM_VC),vc5) 
 	ifeq ($(shell expr $(BCM_REFSW_VERSION) \>= 16.2),1)
         BCM_REFSW_VCX_KHRN = $(BCM_REFSW_VCX)/driver/libs/khrn/include
 	else
@@ -259,51 +117,48 @@ else
 	BCM_REFSW_VCX_KHRN = $(BCM_REFSW_VCX)/driver/interface/khronos/include
 endif
 
-define BCM_REFSW_INSTALL_KHRONOS
-	$(INSTALL) -m 644 ${BCM_REFSW_VCX_KHRN}/GLES/*.h $(STAGING_DIR)/usr/include/GLES/
-	$(INSTALL) -m 644 ${BCM_REFSW_VCX_KHRN}/GLES2/*.h $(STAGING_DIR)/usr/include/GLES2/
-	$(INSTALL) -m 644 ${BCM_REFSW_VCX_KHRN}/EGL/*.h $(STAGING_DIR)/usr/include/EGL/
-	$(INSTALL) -m 644 ${BCM_REFSW_VCX_KHRN}/KHR/*.h $(STAGING_DIR)/usr/include/KHR/
+# Nexus build and install targets
+include package/bcm-refsw/nexus.inc
+
+# Graphics build and install targets
+include package/bcm-refsw/graphics.inc
+
+# NX Server build and install targets
+include package/bcm-refsw/nxserver.inc
+
+# Wayland-EGL build and install targets
+ifeq ($(BR2_PACKAGE_WESTEROS),y)
+	include package/bcm-refsw/wayland-egl.inc
+endif
+
+define BCM_REFSW_BUILD_CMDS
+	$(BCM_REFSW_BUILD_NEXUS)
+	$(BCM_REFSW_BUILD_NXSERVER)
+	$(BCM_REFSW_BUILD_NXCLIENT_EXAMPLES)
+	$(BCM_REFSW_BUILD_PMLIB)
+	$(BCM_REFSW_BUILD_GRAPHICS)
+	$(BCM_REFSW_BUILD_EGLCUBE)
+	$(BCM_REFSW_BUILD_WAYLAND_EGL)
+	$(BCM_REFSW_BUILD_NEXUS_LIBB_OS)
 endef
 
 define BCM_REFSW_INSTALL_STAGING_CMDS
-	$(INSTALL) -m 755 -d $(STAGING_DIR)/usr/lib/pkgconfig
-	$(INSTALL) -m 755 -d $(STAGING_DIR)/usr/include/GLES
-	$(INSTALL) -m 755 -d $(STAGING_DIR)/usr/include/GLES2
-	$(INSTALL) -m 755 -d $(STAGING_DIR)/usr/include/EGL
-	$(INSTALL) -m 755 -d $(STAGING_DIR)/usr/include/KHR
-	$(INSTALL) -m 755 -d $(STAGING_DIR)/usr/include/refsw
-	$(INSTALL) -m 644 package/bcm-refsw/${BCM_REFSW_PLATFORM_VC}/egl.pc $(STAGING_DIR)/usr/lib/pkgconfig/egl.pc
-	$(INSTALL) -m 644 package/bcm-refsw/${BCM_REFSW_PLATFORM_VC}/glesv2.pc $(STAGING_DIR)/usr/lib/pkgconfig/
-	$(INSTALL) -m 644 $(BCM_REFSW_BIN)/include/*.h $(STAGING_DIR)/usr/include/refsw/
-	$(INSTALL) -m 644 $(BCM_REFSW_OUTPUT)/nexus/bin/include/*.h $(STAGING_DIR)/usr/include/refsw/
-	$(INSTALL) -m 644 $(BCM_REFSW_DIR)/nexus/nxclient/server/*.h $(STAGING_DIR)/usr/include/refsw/
-	$(INSTALL) -m 644 $(BCM_REFSW_BIN)/include/platform_app.inc $(STAGING_DIR)/usr/include/
-	$(INSTALL) -m 644 ${BCM_REFSW_VCX}/platform/nexus/*.h $(STAGING_DIR)/usr/include/refsw/	
-	$(INSTALL) -m 644 -D $(BCM_REFSW_BIN)/libnxserver.a $(STAGING_DIR)/usr/lib/libnxserver.a
-if [ $(shell expr $(BCM_REFSW_VERSION) \>= 17.1)$(shell expr $(BCM_REFSW_VERSION) \<= 17.2) = 11 ]; then \
-	$(INSTALL) -m 644 $(BCM_REFSW_OUTPUT)/nexus/bin/nexus_kernel_include/*.h $(STAGING_DIR)/usr/include/refsw ; \
-fi
-	$(call BCM_REFSW_INSTALL_KHRONOS,$(STAGING_DIR))
-	$(call BCM_REFSW_INSTALL_LIBS,$(STAGING_DIR))
-	$(call BCM_REFSW_INSTALL_STAGING_NXSERVER,$(STAGING_DIR))
-	$(call BCM_REFSW_INSTALL_STAGING_WAYLAND_EGL,$(STAGING_DIR))
-	$(BCM_REFSW_INSTALL_STAGING_PMLIB)
+	$(call BCM_REFSW_INSTALL_NEXUS_DEV,         $(STAGING_DIR))
+	$(call BCM_REFSW_INSTALL_GRAPHICS_DEV,      $(STAGING_DIR))
+	$(call BCM_REFSW_INSTALL_NXSERVER_DEV,      $(STAGING_DIR))
+	$(call BCM_REFSW_INSTALL_WAYLAND_EGL_DEV,   $(STAGING_DIR))
+	$(call BCM_REFSW_INSTALL_PMLIB_DEV,         $(STAGING_DIR))
+	$(call BCM_REFSW_INSTALL_NEXUS_LIBB_OS_DEV, $(STAGING_DIR))
 endef
 
 define BCM_REFSW_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 750 -D $(BCM_REFSW_BIN)/nexus $(TARGET_DIR)/sbin/nexus
-	$(INSTALL) -m 644 -D $(BCM_REFSW_BIN)/nexus.ko $(TARGET_DIR)/lib/modules/nexus.ko
-	$(INSTALL) -D -m 755 package/bcm-refsw/S11nexus $(TARGET_DIR)/etc/init.d/S11nexus
-	$(call BCM_REFSW_INSTALL_EXTRA,$(TARGET_DIR))
-	$(call BCM_REFSW_INSTALL_LIBS,$(TARGET_DIR))
-if [ $(shell expr $(BCM_REFSW_VERSION) \>= 17.1)$(shell expr $(BCM_REFSW_VERSION) \<= 17.2) = 11 ]; then \
-	$(INSTALL) -m 644 $(BCM_REFSW_OUTPUT)/nexus/lib/b_os/libb_os.so $(TARGET_DIR)/usr/lib; \
-fi
-	$(call BCM_REFSW_INSTALL_TARGET_NXSERVER,$(TARGET_DIR))
-	$(call BCM_REFSW_INSTALL_TARGET_EGLCUBE,$(TARGET_DIR))
-	$(call BCM_REFSW_INSTALL_SAGE_BIN,$(TARGET_DIR))
-	$(call BCM_REFSW_INSTALL_TARGET_WAYLAND_EGL,$(TARGET_DIR))
+	$(call BCM_REFSW_INSTALL_NEXUS,             $(TARGET_DIR))
+	$(call BCM_REFSW_INSTALL_WAKEUP,            $(TARGET_DIR))
+	$(call BCM_REFSW_INSTALL_GRAPHICS,          $(TARGET_DIR))
+	$(call BCM_REFSW_INSTALL_NXSERVER,          $(TARGET_DIR))
+	$(call BCM_REFSW_INSTALL_EGLCUBE,           $(TARGET_DIR))
+	$(call BCM_REFSW_INSTALL_WAYLAND_EGL,       $(TARGET_DIR))
+	$(call BCM_REFSW_INSTALL_NEXUS_LIBB_OS,     $(TARGET_DIR))
 endef
 
 $(eval $(generic-package))

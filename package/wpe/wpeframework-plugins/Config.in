@@ -13,47 +13,44 @@ menuconfig BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR
 	bool "Compositor"
 	help
 	   WPE Platform Compositor plugin
-if BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR	   
-if BR2_PACKAGE_BCM_REFSW
-config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_NEXUS_SERVER
-	bool "Nexus server"
-	help
-	  Choose this if the system has a already a resource server running like nxserver.
 
-if BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_NEXUS_SERVER
-config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_SERVICE_EXTERNAL
-	bool "External Compositor"
+if BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR
+config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_AUTOSTART
+	bool "Start Automatically"
 	help
-		The master compositor is hosted in a different process. WPEFramework will attach to it.
+	  Select this to start the plugin automatically when starting WPEFramework
 
-config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_SERVICE_INTERNAL
-	bool "Internal Compositor"
-	help
-		The master compositor is hosted in WPEFramework.
-endif
-endif
-
-config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_AUTOTRACE
-   bool "Enable Tracing at startup"
-   help 
-	 If enabled the compositer plug-in will start tracing 
-	 when WPEFramework is started.
-	 
 config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_OUTOFPROCESS
 	bool "Out of process"
 	help
-	  Select this to run this plugin in its own process. 
-	 
+	  Select this to run this plugin in its own process.
+
+config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_NEXUS_SERVER
+	bool "Nexus server"
+    depends on BR2_PACKAGE_BCM_REFSW
+	help
+	  Include a nxserver with the compositor.
+
+config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_ALLOW_UNAUTHENTICATED_CLIENTS
+	bool "Allow unauthenticated clients"
+    depends on BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_NEXUS_SERVER
+	default n
+	help
+	  Allow unauthenticated clients on the nxserver.
+
+config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_GRAPHICS_HEAP_SIZE
+	string "graphics heap (bytes)"
+    depends on BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_NEXUS_SERVER
+	default  100
+	help
+	  The ammount of memory in MB to be configured for the GPU.
+
 config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_HARDWAREREADY
 	string "Manual overrule of the time it takes to initialisize all hardware (ms)"
 	default 0
-
-config BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR_SYSTEM
-	string "Callsign to report information."
-	default Controller
 endif
 
-menuconfig BR2_PACKAGE_WPEFRAMEWORK_DEVICEINFO
+config BR2_PACKAGE_WPEFRAMEWORK_DEVICEINFO
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
 	bool "DeviceInfo"
 	default y
@@ -67,19 +64,13 @@ config BR2_PACKAGE_WPEFRAMEWORK_DHCPSERVER
 	  IPv4 DHCP server functionality. Distribute IPv4 addresses throughout the
 	  network.
 
-menuconfig BR2_PACKAGE_WPEFRAMEWORK_EGLTEST
-	select BR2_PACKAGE_WPEFRAMEWORK_COMMON
-	bool "EGLTest"
-	help
-	   EGLTest Plugin
-
 menuconfig BR2_PACKAGE_WPEFRAMEWORK_LOCATIONSYNC
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
 	bool "LocationSync"
 	help
 	  LocationSync Plugin
 	  WPE Platform Dictionary plugin
-	   
+
 if BR2_PACKAGE_WPEFRAMEWORK_LOCATIONSYNC
 
 config BR2_PACKAGE_WPEFRAMEWORK_LOCATIONSYNC_URI
@@ -88,7 +79,7 @@ config BR2_PACKAGE_WPEFRAMEWORK_LOCATIONSYNC_URI
 
 endif
 
-config BR2_PACKAGE_WPEFRAMEWORK_MONITOR
+menuconfig BR2_PACKAGE_WPEFRAMEWORK_MONITOR
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
 	bool "Monitor"
 	help
@@ -124,39 +115,21 @@ config BR2_PACKAGE_WPEFRAMEWORK_NETWORKCONTROL
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
 	bool "NetworkControl"
 	help
-	  Control the IP adressing of the interfaces in the system from 
+	  Control the IP adressing of the interfaces in the system from
 	  WPEFramework (static IPv4/IPv6 or dhcp IPv4)
 
 menuconfig BR2_PACKAGE_WPEFRAMEWORK_CDMI
-	bool "CDMi"
-	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-	select BR2_PACKAGE_WPEFRAMEWORK_CDM
-	default y
-	help
-	  A CDM server plugin to interact with CDMi plugins.
+       bool "CDMi"
+       select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
+       select BR2_PACKAGE_WPEFRAMEWORK_CDM
+       default y
+       help
+         A CDM server plugin to interact with CDMi plugins.
 
 if BR2_PACKAGE_WPEFRAMEWORK_CDMI
-
-config BR2_PACKAGE_WPEFRAMEWORK_CDMI_CLEARKEY
-	bool "clearkey"
-	default y
- 
-config BR2_PACKAGE_WPEFRAMEWORK_CDMI_PLAYREADY
-	depends on BR2_PACKAGE_HAS_PLAYREADY
-	bool "playready"
-	default y
-
-comment "PlayReady requires the PlayReady package to be selected"
-	depends on !BR2_PACKAGE_HAS_PLAYREADY
- 
-config BR2_PACKAGE_WPEFRAMEWORK_CDMI_WIDEVINE
-	depends on BR2_PACKAGE_WIDEVINE
-	bool "widevive"
-
-comment "WideVine requires the WideVine package to be selected"
-	depends on !BR2_PACKAGE_WIDEVINE
-
+source "package/wpe/wpeframework-cdmi/Config.in"
 endif
+
 
 menuconfig BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
@@ -166,17 +139,21 @@ menuconfig BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL
 
 if BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL
 
-config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IR
+menuconfig BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IR
 	bool "IR (Infrared)"
 	help
 	  Select devices which are based on Infrared (IR) technology
 
-config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IRNEXUS
+if BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IR
+
+menuconfig BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IRNEXUS
 	bool "BCM Nexus IR Remote Control Unit"
 	default false
 	depends on (BR2_PACKAGE_BCM_REFSW || BR2_PACKAGE_HAS_NEXUS) && BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IR
 	help
 	  Enable the Nexus IR remote input
+
+if BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IRNEXUS
 
 config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IRNEXUS_MODE
 	string "IR mode"
@@ -191,15 +168,31 @@ config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IRNEXUS_CODEMASK
 	help
 	  Sets a key code mask if the device generates same code based on trigger bit
 
-config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_RF
-	bool "RF (Radio Frequency)"
+config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_IRNEXUS_KEYMAP
+	string "keymap"
+	default ""
 	help
-	  Select devices which are based on Radio Frequency (RF) technology
+	  Select a keymap file
 
-config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_DEVINPUT
+endif
+
+endif
+
+menuconfig BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_DEVINPUT
 	bool "devinput (linux input system)"
+	depends on BR2_PACKAGE_HAS_UDEV
 	help
 	  Select devices which are annunced in the linux operating system under /dev/input/ as eventX
+
+if BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_DEVINPUT
+
+config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_DEVINPUT_KEYMAP
+	string "keymap"
+	default ""
+	help
+	  Select a keymap file
+
+endif
 
 config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_KEYMAP
 	string "keymap"
@@ -208,12 +201,6 @@ config BR2_PACKAGE_WPEFRAMEWORK_REMOTECONTROL_KEYMAP
 	  Select a keymap file
 
 endif
-
-config BR2_PACKAGE_WPEFRAMEWORK_RPCLINK
-	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-	bool "RPC link server"
-	help
-	  Plugin adding an RPC server to act as a server itself
 
 config BR2_PACKAGE_WPEFRAMEWORK_SNAPSHOT
 	select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS

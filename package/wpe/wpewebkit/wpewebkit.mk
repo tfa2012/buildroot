@@ -4,7 +4,14 @@
 #
 ################################################################################
 
-WPEWEBKIT_VERSION = 8b829db5ab7566b74d095876113fc090645d20ec 
+# If enabled, choose the development version hash.
+ifeq ($(BR2_PACKAGE_WPEWEBKIT_BUILD_DEVELOPMENT_VERSION),y)
+WPEWEBKIT_VERSION_VALUE = 80e8471a70f139b69dc3abc622a7d71beb650773
+else
+WPEWEBKIT_VERSION_VALUE = 200a16b241ff0c6a73e239c45345057d011f0193
+endif
+
+WPEWEBKIT_VERSION = $(WPEWEBKIT_VERSION_VALUE)
 WPEWEBKIT_SITE = $(call github,WebPlatformForEmbedded,WPEWebKit,$(WPEWEBKIT_VERSION))
 
 WPEWEBKIT_INSTALL_STAGING = YES
@@ -60,7 +67,8 @@ WPEWEBKIT_FLAGS = \
 	-DENABLE_DATABASE_PROCESS=ON \
 	-DENABLE_INDEXED_DATABASE=ON \
 	-DENABLE_MEDIA_STATISTICS=ON \
-	-DENABLE_FETCH_API=ON
+	-DENABLE_FETCH_API=ON \
+	-DENABLE_WEBDRIVER=ON
 
 ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
 WPEWEBKIT_FLAGS += -DENABLE_SAMPLING_PROFILER=OFF
@@ -220,7 +228,7 @@ WPEWEBKIT_BUILD_TARGETS += jsc
 endif
 ifeq ($(WPEWEBKIT_BUILD_WEBKIT),y)
 WPEWEBKIT_BUILD_TARGETS += libWPEWebKit.so libWPEWebInspectorResources.so \
-	WPE{Network,Storage,Web}Process
+	WPE{Network,Storage,Web}Process WPEWebDriver
 
 endif
 
@@ -241,6 +249,7 @@ endif
 ifeq ($(WPEWEBKIT_BUILD_WEBKIT),y)
 define WPEWEBKIT_INSTALL_STAGING_CMDS_WEBKIT
 	cp $(WPEWEBKIT_BUILDDIR)/bin/WPE{Network,Storage,Web}Process $(STAGING_DIR)/usr/bin/ && \
+	cp $(WPEWEBKIT_BUILDDIR)/bin/WPEWebDriver $(STAGING_DIR)/usr/bin/ && \
 	cp -d $(WPEWEBKIT_BUILDDIR)/lib/libWPE* $(STAGING_DIR)/usr/lib/ && \
 	DESTDIR=$(STAGING_DIR) $(HOST_DIR)/usr/bin/cmake -DCOMPONENT=Development -P $(WPEWEBKIT_BUILDDIR)/Source/JavaScriptCore/cmake_install.cmake > /dev/null && \
 	DESTDIR=$(STAGING_DIR) $(HOST_DIR)/usr/bin/cmake -DCOMPONENT=Development -P $(WPEWEBKIT_BUILDDIR)/Source/WebKit/cmake_install.cmake > /dev/null
@@ -266,8 +275,9 @@ endif
 ifeq ($(WPEWEBKIT_BUILD_WEBKIT),y)
 define WPEWEBKIT_INSTALL_TARGET_CMDS_WEBKIT
 	cp $(WPEWEBKIT_BUILDDIR)/bin/WPE{Network,Storage,Web}Process $(TARGET_DIR)/usr/bin/ && \
+	cp $(WPEWEBKIT_BUILDDIR)/bin/WPEWebDriver $(TARGET_DIR)/usr/bin/ && \
 	cp -d $(WPEWEBKIT_BUILDDIR)/lib/libWPE* $(TARGET_DIR)/usr/lib/ && \
-	$(STRIPCMD) $(TARGET_DIR)/usr/lib/libWPEWebKit.so.0.0.*
+	$(STRIPCMD) $(TARGET_DIR)/usr/lib/libWPEWebKit.so.*
 endef
 else
 WPEWEBKIT_INSTALL_TARGET_CMDS_WEBKIT = true

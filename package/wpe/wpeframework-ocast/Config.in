@@ -1,0 +1,4 @@
+config BR2_PACKAGE_WPEFRAMEWORK_OCAST
+    bool "Ocast"
+    help
+        WPE Platform Ocast Plugin

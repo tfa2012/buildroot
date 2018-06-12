@@ -22,6 +22,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <inttypes.h>
+#include <sys/time.h>
 
 #ifdef BR_CCACHE
 static char ccache_path[PATH_MAX];
@@ -157,8 +159,160 @@ static void check_unsafe_path(const char *arg,
 	}
 }
 
+static void writeCommandLineFile(const char * filePath, FILE * outFile)
+{
+   FILE * inFile = fopen(filePath, "r");
+   
+   if (!inFile)
+      return;
+      
+   while (1) {
+      char c;
+      int readCount = fread(&c, 1, 1, inFile);
+      if (readCount != 1) {
+         break;
+      }
+      
+      fwrite(&c, 1, 1, outFile);
+   }
+   
+   fclose(inFile);
+}
+
+static void getTime(char * str)
+{
+   struct timeval timeVal;
+   
+   memset(&timeVal, 0, sizeof(timeVal));
+   
+   gettimeofday(&timeVal, NULL);
+   
+   sprintf(str, "%010" PRIu64 ".%06" PRIu64, timeVal.tv_sec, timeVal.tv_usec);
+}
+
+static void logCommandLine(int argc, char ** argv)
+{
+   char timeBuffer[64];
+   char fileNameBuffer[256];
+   
+   getTime(timeBuffer);
+   sprintf(fileNameBuffer, "/tmp/gnu-log/%s.%06d", timeBuffer, getpid());
+
+   FILE * outFile = fopen(fileNameBuffer, "w");
+   
+   char cwd[1024];
+   getcwd(cwd, sizeof(cwd));
+   
+   fprintf(outFile, "%s\n", cwd);
+   
+   for (int i = 0; i < argc; i++) {
+      const char * arg = argv[i];
+      if ((arg[0] != '\0') && (arg[0] == '@')) {
+         writeCommandLineFile(arg + 1, outFile);
+      } else {  
+         fprintf(outFile, "%s\n", arg);
+      }
+   }
+   
+   fprintf(outFile, "%s", "\n");
+   
+   fclose(outFile);
+}
+
+static int envVarIsSet(const char * envVar)
+{
+   const char * value = getenv(envVar);
+   if (value == NULL) {
+      return 0;
+   }
+   
+   if (strcmp(value, "y") == 0)
+      return 1;
+      
+   if (strcmp(value, "Y") == 0)
+      return 1;
+      
+   if (strcmp(value, "true") == 0)
+      return 1;
+      
+   if (strcmp(value, "True") == 0)
+      return 1;
+      
+   return 0;
+}
+
+static int stringStartsWith(const char * text, const char * prefix)
+{
+   return strstr(text, prefix) == text;
+}
+
+static int shouldSkipArg(const char * arg)
+{
+   if (strcmp("-msoft-float", arg) == 0) {
+      return 1;
+   }
+
+   return 0;
+}
+
+static void editArgs(int * argc, char *** argv)
+{
+  char ** orgArgv = *argv;
+  int orgArgc = *argc;
+  
+  if (envVarIsSet("SANDERGCC_TRACE_ARGV")) {
+     logCommandLine(orgArgc, orgArgv);
+  }
+
+  const int addedArgs = 10;
+  char ** newArgv = (char **)malloc(sizeof(char *) * (orgArgc + addedArgs));
+  
+  for (int i = 0; i < (orgArgc + addedArgs); i++) {
+     newArgv[i] = 0;
+  }
+
+  newArgv[0] = orgArgv[0];
+  
+  int newIndex = 1;
+  if (envVarIsSet("SANDERGCC_RECORD_SWITCHES")) {
+     newArgv[newIndex] = "-frecord-gcc-switches";
+     newIndex++;
+  }
+  
+  if (envVarIsSet("SANDERGCC_NO_OPTIMIZATION")) {
+     newArgv[newIndex] = "-O0";
+     newIndex++;
+  }
+  
+  if (envVarIsSet("SANDERGCC_FORCE_SYMBOLS")) {
+     newArgv[newIndex] = "-g";
+     newIndex++;
+  }
+    
+  for (int i = 1; i < orgArgc; i++) {
+     const char * orgArg = orgArgv[i];
+  
+     if (envVarIsSet("SANDERGCC_NO_OPTIMIZATION") && stringStartsWith(orgArg, "-O"))
+        continue;
+     
+     if (envVarIsSet("SANDERGCC_FORCE_SYMBOLS") && stringStartsWith(orgArg, "-g"))
+        continue;
+
+     if (shouldSkipArg(orgArg))
+        continue;
+
+     newArgv[newIndex] = (char *)orgArg;
+     newIndex++;
+  }
+    
+  *argv = newArgv;
+  *argc = newIndex;
+}
+
 int main(int argc, char **argv)
 {
+   editArgs(&argc, &argv);
+
 	char **args, **cur, **exec_args;
 	char *relbasedir, *absbasedir;
 	char *progpath = argv[0];

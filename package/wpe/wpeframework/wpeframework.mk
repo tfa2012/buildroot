@@ -6,7 +6,7 @@
 
 WPEFRAMEWORK_VERSION = 3da421cf6407dd26360f36222ed10f474b7d65e1
 WPEFRAMEWORK_SITE_METHOD = git
-WPEFRAMEWORK_SITE = git@github.com:WebPlatformForEmbedded/WPEFramework.git
+WPEFRAMEWORK_SITE = git@github.com:WebPlatformForEmbedded/WPEFramework-legacy.git
 WPEFRAMEWORK_INSTALL_STAGING = YES
 WPEFRAMEWORK_DEPENDENCIES = zlib
 

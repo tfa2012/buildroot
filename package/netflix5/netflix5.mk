@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-NETFLIX5_VERSION = 991bc9c8e5655357575be96a10285a51c70dff93
+NETFLIX5_VERSION = 3c84e8e3f9763324eab09b72909dfe0785ad50d2
 NETFLIX5_SITE = git@github.com:Metrological/netflix.git
 NETFLIX5_SITE_METHOD = git
 NETFLIX5_LICENSE = PROPRIETARY
@@ -245,6 +245,19 @@ define NETFLIX5_INSTALL_STAGING_CMDS
 	find output/staging/usr/include/netflix/nrdbase/ -name "*.h" -exec sed -i "s/^#include \"\.\.\/\.\.\//#include \"/g" {} \;
 	find output/staging/usr/include/netflix/nrd/ -name "*.h" -exec sed -i "s/^#include \"\.\.\/\.\.\//#include \"/g" {} \;
 	find output/staging/usr/include/netflix/nrdnet/ -name "*.h" -exec sed -i "s/^#include \"\.\.\/\.\.\//#include \"/g" {} \;
+
+	mkdir -p $(TARGET_DIR)/root/Netflix
+	cp -r $(@D)/netflix/src/platform/gibbon/resources/gibbon/fonts $(TARGET_DIR)/root/Netflix
+	cp -r $(@D)/netflix/resources/etc $(TARGET_DIR)/root/Netflix
+	mkdir -p $(TARGET_DIR)/root/Netflix/etc/conf
+	cp -r $(@D)/netflix/src/platform/gibbon/resources/configuration/* $(TARGET_DIR)/root/Netflix/etc/conf
+	cp -r $(@D)/netflix/src/platform/gibbon/resources/gibbon/icu $(TARGET_DIR)/root/Netflix
+	cp -r $(@D)/netflix/src/platform/gibbon/resources $(TARGET_DIR)/root/Netflix
+	cp -r $(@D)/netflix/resources/configuration/* $(TARGET_DIR)/root/Netflix/etc/conf
+	cp $(@D)/partner/graphics/nexus/graphics.xml $(TARGET_DIR)/root/Netflix/etc/conf
+	cp $(@D)/netflix/src/platform/gibbon/resources/gibbon/icu/icudt58l/debug/unames.icu $(TARGET_DIR)/root/Netflix/icu/icudt58l
+	cp $(@D)/netflix/src/platform/gibbon/*.js* $(TARGET_DIR)/root/Netflix/resources/js
+	cp $(@D)/netflix/src/platform/gibbon/resources/default/PartnerBridge.js $(TARGET_DIR)/root/Netflix/resources/js
 endef
 
 define NETFLIX5_INSTALL_TARGET_CMDS

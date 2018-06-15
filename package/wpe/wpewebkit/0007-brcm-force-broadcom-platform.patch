@@ -1,0 +1,11 @@
+diff -ruNP a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2018-06-15 15:06:01.145639694 +0200
++++ b/CMakeLists.txt	2018-06-15 15:05:46.512632976 +0200
+@@ -2,6 +2,7 @@
+ project(WebKit)
+ 
+ add_definitions(-DMETROLOGICAL=1)
++add_definitions(-DBROADCOM_PLATFORM)
+ 
+ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/Source/cmake")
+ 

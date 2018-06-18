@@ -4,12 +4,12 @@
 #
 ################################################################################
 
-NETFLIX5_VERSION = 3c84e8e3f9763324eab09b72909dfe0785ad50d2
+NETFLIX5_VERSION = 00d90a6a12f80ec9b81241f4f166fb702b86603c
 NETFLIX5_SITE = git@github.com:Metrological/netflix.git
 NETFLIX5_SITE_METHOD = git
 NETFLIX5_LICENSE = PROPRIETARY
 # TODO: check if all deps are really needed, e.g. decoders once gstreamer sink is selected
-NETFLIX5_DEPENDENCIES = freetype icu jpeg libpng libmng webp harfbuzz expat openssl c-ares libcurl graphite2 libvpx tremor libvorbis libogg nghttp2 ffmpeg wpeframework
+NETFLIX5_DEPENDENCIES = freetype icu jpeg libpng libmng webp harfbuzz expat openssl c-ares libcurl graphite2 libvpx tremor libvorbis libogg nghttp2 ffmpeg wpeframework playready
 NETFLIX5_INSTALL_TARGET = YES
 NETFLIX5_INSTALL_STAGING = YES
 NETFLIX5_SUBDIR = netflix

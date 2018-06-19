@@ -137,16 +137,4 @@ config BR2_PACKAGE_BCM_REFSW_NXCLIENT_EXAMPLES
 	help
 	  Build the Nexus client exaples.
 
-config BR2_PACKAGE_BCM_REFSW_GRAPHICS_HEAP_SIZE
-    string "Graphics heap size"
-    depends on BR2_PACKAGE_BCM_REFSW && BR2_PACKAGE_BCM_REFSW_17_4
-    help
-      Custom graphics heap size
-
-config BR2_PACKAGE_BCM_REFSW_BOXMODE
-    string "Memory Box Mode"
-    depends on BR2_PACKAGE_BCM_REFSW
-    help
-      Memory box mode, you can find details from release notes per platform
-
 endif

@@ -8,8 +8,7 @@ NETFLIX5_VERSION = 00d90a6a12f80ec9b81241f4f166fb702b86603c
 NETFLIX5_SITE = git@github.com:Metrological/netflix.git
 NETFLIX5_SITE_METHOD = git
 NETFLIX5_LICENSE = PROPRIETARY
-# TODO: check if all deps are really needed, e.g. decoders once gstreamer sink is selected
-NETFLIX5_DEPENDENCIES = freetype icu jpeg libpng libmng webp harfbuzz expat openssl c-ares libcurl graphite2 libvpx tremor libvorbis libogg nghttp2 ffmpeg wpeframework playready
+NETFLIX5_DEPENDENCIES = freetype icu jpeg libpng libmng webp harfbuzz expat openssl c-ares libcurl graphite2 nghttp2 wpeframework playready gst1-plugins-base
 NETFLIX5_INSTALL_TARGET = YES
 NETFLIX5_INSTALL_STAGING = YES
 NETFLIX5_SUBDIR = netflix
@@ -37,7 +36,9 @@ NETFLIX5_CONF_OPTS = \
 	-DDPI_SINK_INTERFACE_IMPLEMENTATION=gstreamer \
 	-DBUILD_DEBUG=OFF -DNRDP_HAS_GIBBON_QA=ON -DNRDP_HAS_MUTEX_STACK=ON -DNRDP_HAS_OBJECTCOUNT=ON \
 	-DBUILD_PRODUCTION=OFF -DNRDP_HAS_QA=ON -DBUILD_SMALL=OFF -DBUILD_SYMBOLS=ON -DNRDP_HAS_TRACING=OFF \
-	-DNRDP_CRASH_REPORTING=breakpad
+	-DNRDP_CRASH_REPORTING=breakpad \
+	-DNRDP_HAS_AUDIOMIXER=OFF \
+	-DDPI_SINK_INTERFACE_OVERRIDE_APPBOOT=ON
 
 ifeq ($(BR2_PACKAGE_NETFLIX5_LIB), y)
 NETFLIX5_CONF_OPTS += -DGIBBON_MODE=shared

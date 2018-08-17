@@ -5,3 +5,21 @@ config BR2_PACKAGE_CJSON
 	  compliant JSON parser, under MIT license.
 
 	  https://github.com/DaveGamble/cJSON
+
+if BR2_PACKAGE_CJSON
+choice
+        prompt "cJSON Version"
+	default BR2_PACKAGE_CJSON_VERSION_1.4 if !BR2_PACKAGE_PARODUS
+	default BR2_PACKAGE_CJSON_VERSION_1.7 if BR2_PACKAGE_PARODUS
+
+	menuconfig BR2_PACKAGE_CJSON_VERSION_1.4
+	bool "cJSON-1.4"
+        help
+          cJSON version 1.4
+
+	menuconfig BR2_PACKAGE_CJSON_VERSION_1.7
+	bool "cJSON-1.7"
+        help
+          cJSON version 1.7
+endchoice
+endif

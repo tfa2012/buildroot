@@ -4,7 +4,11 @@
 #
 ################################################################################
 
+ifeq ($(BR2_PACKAGE_CJSON_VERSION_1.7),y)
+CJSON_VERSION = v1.7.1
+else
 CJSON_VERSION = v1.4.0
+endif
 CJSON_SITE = $(call github,DaveGamble,cjson,$(CJSON_VERSION))
 CJSON_INSTALL_STAGING = YES
 CJSON_LICENSE = MIT

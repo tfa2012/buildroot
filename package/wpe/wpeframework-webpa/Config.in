@@ -1,0 +1,5 @@
+config BR2_PACKAGE_WPEFRAMEWORK_WEBPA
+	bool "WebPA"
+	depends on BR2_PACKAGE_WEBPA
+	help
+	   WPE Platform AVNClient plugin

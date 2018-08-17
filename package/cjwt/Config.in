@@ -1,0 +1,5 @@
+config BR2_PACKAGE_CJWT
+    bool "cjwt"
+    default n
+    help
+       Recipe to build c library for processing jwt token

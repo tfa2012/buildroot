@@ -59,6 +59,7 @@ libmng.so
 libmtdev.so
 libnetflix.so
 libnettle.so
+libopus.so
 liborc-0.4.so
 liborc-test-0.4.so
 libpcre.so

@@ -19,7 +19,7 @@ GST1_BCM_VERSION = 17.1-7
 else ifneq ($(filter y,$(BR2_PACKAGE_ACN_SDK)),)
 GST1_BCM_VERSION = 17.1-5
 else ifneq ($(filter y,$(BR2_PACKAGE_HOMECAST_SDK)),)
-GST1_BCM_VERSION = 17.1-wip
+GST1_BCM_VERSION = 17.1-platformserver
 else ifneq ($(filter y,$(BR2_PACKAGE_VSS_SDK)),)
 GST1_BCM_VERSION = dd00f0762b7dfed4e4e657482d085e554201fa48
 else

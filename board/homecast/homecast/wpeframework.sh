@@ -22,8 +22,20 @@ fi
 
 grep -q "/etc/ssl/certs" /proc/mounts && echo "/etc/ssl/certs is already mounted" || mount --bind $DESTINATION/etc/ssl/certs /etc/ssl/certs
 
+# Enable GST debugging
 #export GST_DEBUG=3
+
+# Drop caches
+echo 3 > /proc/sys/vm/drop_caches
+
+# Core files
+#mkdir -p /tmp/nfs/metrological/cores
+#echo 1 > /proc/sys/kernel/core_uses_pid
+#echo 2 > /proc/sys/fs/suid_dumpable
+#echo "/tmp/nfs/metrological/cores/core--process%E" > /proc/sys/kernel/core_pattern
+#ulimit -c unlimited
 
 # Firewall for non-prod builds
 iptables -I INPUT -i eth0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+#iptables -I INPUT -i eth0 -p tcp --dport 9998 -m state --state NEW,ESTABLISHED -j ACCEPT
 LD_PRELOAD=$SOURCE/lib/libstdc\+\+.so.6.0.21:/lib/libnexus.so WPEFramework -c $SOURCE/etc/WPEFramework/config.json

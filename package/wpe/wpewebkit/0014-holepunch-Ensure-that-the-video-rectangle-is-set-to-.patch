@@ -1,0 +1,31 @@
+From fd079040ee09f24b55e335b69123c671e04d22d0 Mon Sep 17 00:00:00 2001
+From: Miguel Gomez <magomez@igalia.com>
+Date: Fri, 10 Aug 2018 10:28:49 +0200
+Subject: [PATCH] [holepunch] Ensure that the video rectangle is set to the
+ videoSink after it's created.
+
+---
+ .../graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp     | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 1bf60665837..d1dc5597f39 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -1084,6 +1084,13 @@ void MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
+         }
+ #endif
+ 
++#if USE(HOLE_PUNCH_GSTREAMER)
++        // Ensure that the video rectangle is set to the videoSink once we are sure that the
++        // videoSink was created.
++        if (currentState == GST_STATE_NULL && newState == GST_STATE_READY)
++            updateVideoRectangle();
++#endif
++
+         if (!messageSourceIsPlaybin || m_delayingLoad)
+             break;
+         updateStates();
+-- 
+2.17.0
+

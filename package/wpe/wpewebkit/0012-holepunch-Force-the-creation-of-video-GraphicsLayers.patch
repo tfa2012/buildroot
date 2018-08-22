@@ -1,0 +1,67 @@
+From a2adbb783f5876cad4252ab027f645cd3fb9dd3b Mon Sep 17 00:00:00 2001
+From: Miguel Gomez <magomez@igalia.com>
+Date: Mon, 6 Aug 2018 16:57:18 +0200
+Subject: [PATCH] [holepunch] Force the creation of video GraphicsLayers from
+ the start.
+
+In normal conditions, the video GraphicsLayer is not created until we receive feedback
+from the player. Concretely, when we get a valid naturalSize for the video frames, a layout
+is triggered that causes the creation of the GraphicsLayer.
+When using hole punch, we may not be able to get a valid naturalSize. Using HOLE_PUNCH_GSTREAMER
+we have problems to get it on brcm boxes, and using HOLE_PUNCH_EXTERNAL we don't have a way to get
+it at all. So instead of using the normal approach, we force the creation of the layer from the
+very beginning.
+
+We also need to get sure that the contentsRect is properly set to the video GraphicsLayers, even
+if they don't have their platformLayer set.
+---
+ Source/WebCore/rendering/RenderLayerBacking.cpp    | 11 ++++++++++-
+ Source/WebCore/rendering/RenderLayerCompositor.cpp | 10 ++++++++++
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/Source/WebCore/rendering/RenderLayerBacking.cpp b/Source/WebCore/rendering/RenderLayerBacking.cpp
+index 72589e358e6..dd1911f18d5 100644
+--- a/Source/WebCore/rendering/RenderLayerBacking.cpp
++++ b/Source/WebCore/rendering/RenderLayerBacking.cpp
+@@ -1218,7 +1218,16 @@ void RenderLayerBacking::updateAfterDescendants()
+     if (!m_owningLayer.isRenderViewLayer()) {
+         bool didUpdateContentsRect = false;
+         updateDirectlyCompositedBoxDecorations(contentsInfo, didUpdateContentsRect);
+-        if (!didUpdateContentsRect && m_graphicsLayer->usesContentsLayer())
++
++        // When using hole punch, video GraphicsLayers may not have their platformLayer set when
++        // this is called, which causes the contentsRect not to be set for them. As we are guaranteed
++        // that video elements have a layer using the hole punch, ensure that resetContentsRect() is called
++        // for them.
++        if (!didUpdateContentsRect && (m_graphicsLayer->usesContentsLayer()
++#if USE(HOLE_PUNCH_GSTREAMER) || USE(HOLE_PUNCH_EXTERNAL)
++            || is<RenderVideo>(renderer())
++#endif
++        ))
+             resetContentsRect();
+     }
+ 
+diff --git a/Source/WebCore/rendering/RenderLayerCompositor.cpp b/Source/WebCore/rendering/RenderLayerCompositor.cpp
+index 731eb569bda..fbbf799ab0b 100644
+--- a/Source/WebCore/rendering/RenderLayerCompositor.cpp
++++ b/Source/WebCore/rendering/RenderLayerCompositor.cpp
+@@ -2427,6 +2427,16 @@ bool RenderLayerCompositor::requiresCompositingForVideo(RenderLayerModelObject&
+         return false;
+ #if ENABLE(VIDEO)
+     if (is<RenderVideo>(renderer)) {
++#if USE(HOLE_PUNCH_GSTREAMER) || USE(HOLE_PUNCH_EXTERNAL)
++        // In normal conditions, the video GraphicsLayer is not created until we receive feedback
++        // from the player. Concretely, when we get a valid naturalSize for the video frames, a layout
++        // is triggered that causes the creation of the GraphicsLayer.
++        // When using hole punch, we may not be able to get a valid naturalSize. Using HOLE_PUNCH_GSTREAMER
++        // we have problems to get it on brcm boxes, and using HOLE_PUNCH_EXTERNAL we don't have a way to get
++        // it at all. So instead of using the normal approach, we force the creation of the layer from the
++        // very beginning.
++        return true;
++#endif
+         auto& video = downcast<RenderVideo>(renderer);
+         return (video.requiresImmediateCompositing() || video.shouldDisplayVideo()) && canAccelerateVideoRendering(video);
+     }
+-- 
+2.17.0
+

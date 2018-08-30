@@ -1,4 +1,4 @@
-config BR2_PACKAGE_MSGPACK-C
+config BR2_PACKAGE_MSGPACK_C
     bool "msgpack-c"
     default n
     help

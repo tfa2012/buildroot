@@ -1,4 +1,4 @@
-config BR2_PACKAGE_WDMP-C
+config BR2_PACKAGE_WDMP_C
     bool "wdmp-c"
     default n
     help

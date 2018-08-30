@@ -1,5 +1,18 @@
 config BR2_PACKAGE_WPEFRAMEWORK_WEBPA
 	bool "WebPA"
-	depends on BR2_PACKAGE_WEBPA
+	select BR2_PACKAGE_LIBPARODUS
+	select BR2_PACKAGE_TINYXML
 	help
 	   WPE Platform AVNClient plugin
+
+if BR2_PACKAGE_WPEFRAMEWORK_WEBPA
+config BR2_PACKAGE_WPEFRAMEWORK_WEBPA_AUTOSTART
+	bool "autostart"
+	default n
+config BR2_PACKAGE_WPEFRAMEWORK_WEBPA_OOP
+	bool "outofprocess"
+        default y
+config BR2_PACKAGE_WPEFRAMEWORK_WEBPA_DEVICE_INFO
+	bool "device info"
+	default y
+endif

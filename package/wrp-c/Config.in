@@ -1,4 +1,4 @@
-config BR2_PACKAGE_WRP-C
+config BR2_PACKAGE_WRP_C
     bool "wrp-c"
     default n
     help

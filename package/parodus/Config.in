@@ -12,3 +12,12 @@ config BR2_PACKAGE_PARODUS
     select BR2_PACKAGE_CJSON
     help
        parodus client library
+
+if BR2_PACKAGE_PARODUS
+config BR2_PACKAGE_PARODUS_SERVICE_APP
+    bool "Create Parodus Service App"
+    default n
+    help
+       This option allows to create parodus service app,
+       default is parodus library library
+endif

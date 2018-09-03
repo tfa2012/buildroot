@@ -15,4 +15,7 @@ config BR2_PACKAGE_WPEFRAMEWORK_WEBPA_OOP
 config BR2_PACKAGE_WPEFRAMEWORK_WEBPA_DEVICE_INFO
 	bool "device info"
 	default y
+config BR2_PACKAGE_WPEFRAMEWORK_WEBPA_SERVICE
+	bool "parodus service"
+	default y
 endif

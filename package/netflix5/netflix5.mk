@@ -4,8 +4,7 @@
 #
 ################################################################################
 
-# TODO: only select WPEFramework plugins as dependency if wpeframework graphics backend is selected
-NETFLIX5_VERSION = fd91f1b6905f9024ca04856601132a1d3da91845
+NETFLIX5_VERSION = b24916915a7c9b4a0be7d154a61bc5477e9edbad
 NETFLIX5_SITE = git@github.com:Metrological/netflix.git
 NETFLIX5_SITE_METHOD = git
 NETFLIX5_LICENSE = PROPRIETARY
@@ -41,9 +40,11 @@ NETFLIX5_CONF_OPTS = \
 	-DBUILD_PRODUCTION=OFF -DNRDP_HAS_QA=ON -DBUILD_SMALL=OFF -DBUILD_SYMBOLS=ON -DNRDP_HAS_TRACING=OFF \
 	-DNRDP_CRASH_REPORTING=breakpad \
 	-DNRDP_HAS_AUDIOMIXER=OFF \
-	-DDPI_SINK_INTERFACE_OVERRIDE_APPBOOT=ON
+	-DDPI_SINK_INTERFACE_OVERRIDE_APPBOOT=ON \
+	-DGIBBON_GRAPHICS=rpi \
+	-DGIBBON_GRAPHICS_GL_WSYS=egl
 
-ifeq ($(BR2_PACKAGE_NETFLIX5_LIB), y)
+ifeq ($(BR2_PACKAGE_NETFLIX5_LIB), y)	
 NETFLIX5_CONF_OPTS += -DGIBBON_MODE=shared
 NETFLIX5_FLAGS = -O3 -fPIC
 else
@@ -212,19 +213,9 @@ NETFLIX5_CONF_OPTS += \
 	-DCMAKE_C_FLAGS="$(TARGET_CFLAGS) $(NETFLIX5_FLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(TARGET_CXXFLAGS) $(NETFLIX5_FLAGS)"
 
-
-
-define NETFLIX5_FIX_CONFIG_XMLS
-	mkdir -p $(@D)/netflix/src/platform/gibbon/data/etc/conf
-	cp -f $(@D)/netflix/resources/configuration/common.xml $(@D)/netflix/src/platform/gibbon/data/etc/conf/common.xml
-	cp -f $(@D)/netflix/resources/configuration/config.xml $(@D)/netflix/src/platform/gibbon/data/etc/conf/config.xml
-endef
-
-NETFLIX5_POST_EXTRACT_HOOKS += NETFLIX5_FIX_CONFIG_XMLS
-
-ifeq ($(BR2_PACKAGE_NETFLIX5_LIB),y)
-
 define NETFLIX5_INSTALL_STAGING_CMDS
+   echo 'About to start install staging commands'
+
 	make -C $(@D)/netflix install
 	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/libnetflix.so $(STAGING_DIR)/usr/lib
 	$(INSTALL) -D package/netflix/netflix.pc $(STAGING_DIR)/usr/lib/pkgconfig/netflix.pc
@@ -262,21 +253,14 @@ define NETFLIX5_INSTALL_STAGING_CMDS
 	cp $(@D)/netflix/src/platform/gibbon/resources/gibbon/icu/icudt58l/debug/unames.icu $(TARGET_DIR)/root/Netflix/icu/icudt58l
 	cp $(@D)/netflix/src/platform/gibbon/*.js* $(TARGET_DIR)/root/Netflix/resources/js
 	cp $(@D)/netflix/src/platform/gibbon/resources/default/PartnerBridge.js $(TARGET_DIR)/root/Netflix/resources/js
+
+   echo 'Done with install staging commands'
 endef
 
 define NETFLIX5_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/libnetflix.so $(TARGET_DIR)/usr/lib
 	$(STRIPCMD) $(TARGET_DIR)/usr/lib/libnetflix.so
 endef
-
-else
-
-define NETFLIX5_INSTALL_TARGET_CMDS
-	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/netflix $(TARGET_DIR)/usr/bin
-	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/manufss $(TARGET_DIR)/usr/bin
-endef
-
-endif
 
 define NETFLIX5_PREPARE_DPI
 	mkdir -p $(TARGET_DIR)/root/Netflix/dpi

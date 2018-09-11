@@ -15,7 +15,7 @@ GLIB_NETWORKING_DEPENDENCIES = \
 	host-intltool \
 	libglib2
 GLIB_NETWORKING_CONF_OPTS = \
-	--with-ca-certificates=/etc/ssl/certs/ca-certificates.crt
+	--with-ca-certificates=/tmp/nfs/cwc/etc/ssl/certs/ca-certificates.crt
 GLIB_NETWORKING_LICENSE = LGPLv2+
 GLIB_NETWORKING_LICENSE_FILES = COPYING
 GLIB_NETWORKING_INSTALL_TARGET_OPTS = DESTDIR=$(TARGET_DIR) \

@@ -299,15 +299,16 @@ endif
 RSYNC_VCS_EXCLUSIONS += --exclude LayoutTests --exclude WebKitBuild
 
 # Temporary fix for vss platforms
-ifeq ($(BR2_PACKAGE_VSS_SDK),y)
+ifeq ($(BR2_PACKAGE_HAS_NEXUS),y)
 WPEWEBKIT_PKGDIR = "$(TOP_DIR)/package/wpe/wpewebkit"
 
 define WPEWEBKIT_APPLY_LOCAL_PATCHES
  $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 0003-MSE2018_MSE_Conformance_Test_55_DelayedAACAudio.patch.conditional
  $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 0005-YT_Seek_To_Buffered_Position_Fix_For_BRCM.patch.conditional
  $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 0006-brcm-force-sink-av-factories.patch.conditional
- $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 0011-change-position-query-frequency-10ms.patch.conditional
 endef
+
+# $(APPLY_PATCHES) $(@D) $(WPEWEBKIT_PKGDIR) 0011-change-position-query-frequency-10ms.patch.conditional
 
 WPEWEBKIT_POST_PATCH_HOOKS += WPEWEBKIT_APPLY_LOCAL_PATCHES
 endif

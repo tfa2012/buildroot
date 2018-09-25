@@ -1,0 +1,38 @@
+From e4274ac86027a01daebf8a6fac218532ad5fbdbb Mon Sep 17 00:00:00 2001
+From: Milomir Babic <milomir.babic@zenterio.com>
+Date: Tue, 11 Sep 2018 14:09:59 +0200
+Subject: [PATCH] [GStreamer] Improved fix for MP3 live broadcasting
+
+Uses the general case instead of the specific case for !USE(FUSION_SINK).
+No need to return the previous duration.
+---
+ .../graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp    | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
+
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index d3efa0eed30..15fe0811175 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -525,18 +525,12 @@ MediaTime MediaPlayerPrivateGStreamer::durationMediaTime() const
+     if (!m_pipeline || m_errorOccured)
+         return MediaTime::invalidTime();
+ 
+-#if !USE(FUSION_SINK)
+     if (m_durationAtEOS.isValid())
+         return m_durationAtEOS;
+-#endif
+ 
+     // The duration query would fail on a not-prerolled pipeline.
+-    if (GST_STATE(m_pipeline.get()) < GST_STATE_PAUSED) {
+-        if(m_isEndReached && m_previousDuration.isValid()) {
+-            return m_previousDuration;
+-        }
++    if (GST_STATE(m_pipeline.get()) < GST_STATE_PAUSED)
+         return MediaTime::positiveInfiniteTime();
+-    }
+ 
+     gint64 timeLength = 0;
+ 
+-- 
+2.17.0
+

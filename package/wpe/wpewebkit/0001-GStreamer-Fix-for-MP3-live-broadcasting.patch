@@ -1,0 +1,123 @@
+From 6f679647cf39bdc6fb17fa9de76a3b89208eba99 Mon Sep 17 00:00:00 2001
+From: Milomir Babic <milomir.babic@zenterio.com>
+Date: Fri, 7 Sep 2018 14:36:04 +0000
+Subject: [PATCH] [GStreamer] Fix for MP3 live broadcasting
+
+MediaPlayerPrivateGStreamer::playbackPosition(): Video sink is not
+present, so audio sink should be asked for position.
+
+MediaPlayerPrivateGStreamer::durationMediaTime(): MP3 duration fails for
+some time at the beginning which causes the infinity to be returned and
+makes browser think it is a live stream. Because of that, "Live
+Broadcast" is blinked at the beginning of the playback for up to ~1s.
+
+MediaPlayerPrivateGStreamer::durationChanged(): This function compared
+current duration with current duration and expected them to be
+different. Thus, m_player was never notified of the duration change
+which caused "Live Broadcast" to stay until the end of playback. This
+did not always happen, not sure why.
+---
+ .../gstreamer/MediaPlayerPrivateGStreamer.cpp | 39 +++++++++++--------
+ .../gstreamer/MediaPlayerPrivateGStreamer.h   |  1 +
+ 2 files changed, 24 insertions(+), 16 deletions(-)
+
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index e17f1047961..d3efa0eed30 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -142,6 +142,7 @@ MediaPlayerPrivateGStreamer::MediaPlayerPrivateGStreamer(MediaPlayer* player)
+     , m_seekTime(MediaTime::invalidTime())
+     , m_source(nullptr)
+     , m_volumeAndMuteInitialized(false)
++    , m_previousDuration(MediaTime::invalidTime())
+     , m_mediaLocations(nullptr)
+     , m_mediaLocationCurrentIndex(0)
+     , m_playbackRatePause(false)
+@@ -368,16 +369,21 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
+ 
+     // Position is only available if no async state change is going on and the state is either paused or playing.
+     gint64 position = GST_CLOCK_TIME_NONE;
+-    GstElement* videoDec = nullptr;
++    GstElement* positionElement = nullptr;
+     GstQuery* query = gst_query_new_position(GST_FORMAT_TIME);
+ #if USE(FUSION_SINK)
+-    g_object_get(m_pipeline.get(), "video-sink", &videoDec, nullptr);
+-    if (!GST_IS_ELEMENT(videoDec))
+-        return MediaTime::zeroTime();
++    g_object_get(m_pipeline.get(), "video-sink", &positionElement, nullptr);
++    if (!GST_IS_ELEMENT(positionElement)) {
++        g_object_get(m_pipeline.get(), "audio-sink", &positionElement, nullptr);
++        if(!GST_IS_ELEMENT(positionElement)) {
++            GST_DEBUG("Returning zero time");
++            return MediaTime::zeroTime();
++        }
++    }
+ #else
+-    videoDec = m_pipeline.get();
++    positionElement = m_pipeline.get();
+ #endif
+-    if (gst_element_query(videoDec, query))
++    if (gst_element_query(positionElement, query))
+         gst_query_parse_position(query, 0, &position);
+     gst_query_unref(query);
+ 
+@@ -393,7 +399,7 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
+ #if PLATFORM(BCM_NEXUS)
+     // implement getting pts time from broadcom decoder directly for seek functionality
+     gint64 currentPts = -1;
+-    /*GstElement**/ videoDec = findVideoDecoder(m_pipeline.get());
++    GstElement* videoDec = findVideoDecoder(m_pipeline.get());
+     const char* videoPtsPropertyName = "video_pts";
+     if (videoDec)
+         g_object_get(videoDec, videoPtsPropertyName, &currentPts, nullptr);
+@@ -525,8 +531,12 @@ MediaTime MediaPlayerPrivateGStreamer::durationMediaTime() const
+ #endif
+ 
+     // The duration query would fail on a not-prerolled pipeline.
+-    if (GST_STATE(m_pipeline.get()) < GST_STATE_PAUSED)
++    if (GST_STATE(m_pipeline.get()) < GST_STATE_PAUSED) {
++        if(m_isEndReached && m_previousDuration.isValid()) {
++            return m_previousDuration;
++        }
+         return MediaTime::positiveInfiniteTime();
++    }
+ 
+     gint64 timeLength = 0;
+ 
+@@ -1923,16 +1933,13 @@ void MediaPlayerPrivateGStreamer::didEnd()
+ 
+ void MediaPlayerPrivateGStreamer::durationChanged()
+ {
+-    MediaTime previousDuration = durationMediaTime();
+-
+-    // FIXME: Check if this method is still useful, because it's not doing its work at all
+-    // since bug #159458 removed a cacheDuration() call here.
++    MediaTime newDuration = durationMediaTime();
+ 
+-    // Avoid emiting durationchanged in the case where the previous
+-    // duration was 0 because that case is already handled by the
+-    // HTMLMediaElement.
+-    if (previousDuration && durationMediaTime() != previousDuration)
++    if (newDuration != m_previousDuration) {
++        GST_DEBUG("Triggering durationChanged");
+         m_player->durationChanged();
++    }
++    m_previousDuration = newDuration;
+ }
+ 
+ void MediaPlayerPrivateGStreamer::loadingFailed(MediaPlayer::NetworkState error)
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
+index b7d6b312980..5490a2d4e83 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.h
+@@ -195,6 +195,7 @@ protected:
+     MediaTime m_seekTime;
+     GRefPtr<GstElement> m_source;
+     bool m_volumeAndMuteInitialized;
++    MediaTime m_previousDuration;
+ 
+     static GstSeekFlags hardwareDependantSeekFlags();
+     void readyTimerFired();
+-- 
+2.17.0
+

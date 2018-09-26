@@ -1,0 +1,36 @@
+From c70907a45db802420f3b2b3fbd5481b0cd29b539 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Enrique=20Oca=C3=B1a=20Gonz=C3=A1lez?= <eocanha@igalia.com>
+Date: Thu, 30 Aug 2018 16:21:18 +0000
+Subject: [PATCH] [GStreamer][MSE] Stop falling back to last seek position only
+ after an ASYNC_DONE bus message
+
+This fixes MSE 2018 Progressive test "43. ProgressingAfterSeek"
+---
+ .../graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp        | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 608e239744f..c855c280912 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -1020,8 +1020,6 @@ void MediaPlayerPrivateGStreamer::handleMessage(GstMessage* message)
+     const GstStructure* structure = gst_message_get_structure(message);
+     GstState requestedState, currentState, newState;
+ 
+-    m_canFallBackToLastFinishedSeekPosition = false;
+-
+     if (structure) {
+         const gchar* messageTypeName = gst_structure_get_name(structure);
+ 
+@@ -1624,6 +1622,8 @@ void MediaPlayerPrivateGStreamer::asyncStateChangeDone()
+     if (!m_pipeline || m_errorOccured)
+         return;
+ 
++    m_canFallBackToLastFinishedSeekPosition = false;
++
+     if (m_seeking) {
+         if (m_seekIsPending)
+             updateStates();
+-- 
+2.17.0
+

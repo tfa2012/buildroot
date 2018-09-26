@@ -1,0 +1,65 @@
+From 2d53df18f919efd9acaaca32c48f5c5570ab6802 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Enrique=20Oca=C3=B1a=20Gonz=C3=A1lez?= <eocanha@igalia.com>
+Date: Wed, 29 Aug 2018 14:20:06 +0000
+Subject: [PATCH] [GStreamer][MSE] Increase position caching frequency and
+ prevent throttling
+
+This fixes MSE 2018 Progressive Tests 30, 32, 33 (granularity) by increasing
+the time granularity to better values (200ms on average, the spec allows a
+range from 15 to 250ms).
+
+This patch also prevents throttling when one playbackProgressTimerFired() call
+takes slightly more to run and the next one slightly less (eg: 249ms for an
+original threshold limit of 250ms).
+
+Finally, the player private caching time is decreased to be lower than the
+HTMLMediaElement progress timer frequency. This prevents replying the same time
+two consecutive times under some circumstances (the 249ms case mentioned
+before).
+---
+ Source/WebCore/html/HTMLMediaElement.cpp                    | 6 +++---
+ .../graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp      | 4 +++-
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/Source/WebCore/html/HTMLMediaElement.cpp b/Source/WebCore/html/HTMLMediaElement.cpp
+index 21fb3c6b0be..3816cfbe99c 100644
+--- a/Source/WebCore/html/HTMLMediaElement.cpp
++++ b/Source/WebCore/html/HTMLMediaElement.cpp
+@@ -3737,7 +3737,7 @@ void HTMLMediaElement::scanTimerFired()
+ 
+ // The spec says to fire periodic timeupdate events (those sent while playing) every
+ // "15 to 250ms", we choose the slowest frequency
+-static const Seconds maxTimeupdateEventFrequency { 250_ms };
++static const Seconds maxTimeupdateEventFrequency { 200_ms };
+ 
+ void HTMLMediaElement::startPlaybackProgressTimer()
+ {
+@@ -3788,8 +3788,8 @@ void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent)
+     MonotonicTime now = MonotonicTime::now();
+     Seconds timedelta = now - m_clockTimeAtLastUpdateEvent;
+ 
+-    // throttle the periodic events
+-    if (periodicEvent && timedelta < maxTimeupdateEventFrequency)
++    // Throttle the periodic events, but leave some room for timers that run slightly faster than expected.
++    if (periodicEvent && timedelta < (maxTimeupdateEventFrequency - 50_ms))
+         return;
+ 
+     // Some media engines make multiple "time changed" callbacks at the same time, but we only want one
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index 15fe0811175..608e239744f 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -362,7 +362,9 @@ MediaTime MediaPlayerPrivateGStreamer::playbackPosition() const
+     }
+ 
+     double now = WTF::currentTime();
+-    if (m_lastQuery > -1 && ((now - m_lastQuery) < 0.25) && m_cachedPosition.isValid())
++    // This cachedPosition time-to-live should be slightly lower than the maxTimeupdateEventFrequency
++    // in HTMLMediaElement to prevent returning the same cached value in two consecutive updates.
++    if (m_lastQuery > -1 && ((now - m_lastQuery) < 0.175) && m_cachedPosition.isValid())
+         return m_cachedPosition;
+ 
+     m_lastQuery = now;
+-- 
+2.17.0
+

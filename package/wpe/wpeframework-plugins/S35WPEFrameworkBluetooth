@@ -13,27 +13,8 @@ start() {
             echo "OK"
         fi
     fi
-
-    if [ -f /usr/libexec/bluetooth/bluetoothd ]; then
-        echo -n "Starting bluetoothd daemon"
-        /usr/libexec/bluetooth/bluetoothd &
-        [ $? == 0 ] && echo "OK" || echo "FAIL"
-    fi
-
-    if [ -f /usr/bin/bluealsa ]; then
-        echo -n "Starting bluealsa daemon"
-        /usr/bin/bluealsa &
-        [ $? == 0 ] && echo "OK" || echo "FAIL"
-    fi
 }
 stop() {
-	echo -n "Stopping bluetoothd daemon"
-	killall -9 bluetoothd
-	[ $? == 0 ] && echo "OK" || echo "FAIL"
-
-	echo -n "Stopping bluealsa daemon"
-	killall -9 bluealsa
-	[ $? == 0 ] && echo "OK" || echo "FAIL"
 }
 restart() {
 	stop

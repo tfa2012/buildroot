@@ -4,9 +4,9 @@
 #
 ################################################################################
 
-PARODUS_VERSION = 326e83c177315672ffd50149a6e41ac63e11d23d
+PARODUS_VERSION = cc3c701b4a972afef05149b4f43ba06007c6de2d
 PARODUS_SITE_METHOD = git
-PARODUS_SITE = git://github.com/Comcast/parodus.git
+PARODUS_SITE = https://github.com/HaseenaSainul/parodus
 PARODUS_INSTALL_STAGING = YES
 
 PARODUS_DEPENDENCIES = nopoll cimplog nanomsg msgpack-c cjson trower-base64 wrp-c wdmp-c cjson

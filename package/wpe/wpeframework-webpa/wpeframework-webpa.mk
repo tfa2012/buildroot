@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-WPEFRAMEWORK_WEBPA_VERSION = 286e70dc199b2d4b8f11c1bfacdceb212b585854
+WPEFRAMEWORK_WEBPA_VERSION = eb5032aa82dd61332a81a27716b19606ac0f2771
 WPEFRAMEWORK_WEBPA_SITE_METHOD = git
 WPEFRAMEWORK_WEBPA_SITE = git@github.com:WebPlatformForEmbedded/WPEPluginWebPA.git
 WPEFRAMEWORK_WEBPA_INSTALL_STAGING = YES

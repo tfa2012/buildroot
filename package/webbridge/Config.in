@@ -122,6 +122,11 @@ endif
 comment "provisioning needs the package libprovision in external mode."
 	depends on !BR2_PACKAGE_LIBPROVISION
 
+menuconfig BR2_PACKAGE_WEBBRIDGE_PLUGIN_MIGRATION
+	bool "migration"
+	help
+	  The end of an era...
+
 config BR2_PACKAGE_WEBBRIDGE_PLUGIN_WEBPROXY
 	bool "webproxy"
 	help

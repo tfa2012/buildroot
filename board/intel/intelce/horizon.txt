@@ -101,3 +101,5 @@ libwebpdemux.so
 NetworkInfo
 libepoxy.so
 WPEStorageProcess
+libnvram_bsl.so
+libmigration.so

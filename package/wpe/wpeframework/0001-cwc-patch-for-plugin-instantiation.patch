@@ -1,0 +1,15 @@
+diff --git a/Source/WPEFramework/PluginServer.cpp b/Source/WPEFramework/PluginServer.cpp
+index 1e4044d..198acb1 100644
+--- a/Source/WPEFramework/PluginServer.cpp
++++ b/Source/WPEFramework/PluginServer.cpp
+@@ -582,8 +582,8 @@ Server::Server(Server::Config& configuration, ISecurity* securityHandler, const
+         Core::ProxyType<Service> service(*iterator);
+ 
+         if (service->AutoStart() == true) {
+-
+-            PluginHost::WorkerPool::Instance().Submit(PluginHost::IShell::Job::Create(&(*service), PluginHost::IShell::ACTIVATED, PluginHost::IShell::STARTUP));
++            service->Activate(PluginHost::IShell::STARTUP);
++            //PluginHost::WorkerPool::Instance().Submit(PluginHost::IShell::Job::Create(&(*service), PluginHost::IShell::ACTIVATED, PluginHost::IShell::STARTUP));
+         } else {
+             SYSLOG(Startup, (_T("Activation of plugin [%s]:[%s] blocked"), service->ClassName().c_str(), service->Callsign().c_str()));
+         }

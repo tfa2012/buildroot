@@ -1,0 +1,30 @@
+################################################################################
+#
+# wpeframework-espial
+#
+################################################################################
+
+WPEFRAMEWORK_ESPIAL_VERSION = master
+WPEFRAMEWORK_ESPIAL_SITE_METHOD = git
+WPEFRAMEWORK_ESPIAL_SITE = git@github.com:WebPlatformForEmbedded/WPEPluginEspial.git
+WPEFRAMEWORK_ESPIAL_INSTALL_STAGING = YES
+WPEFRAMEWORK_ESPIAL_DEPENDENCIES = wpeframework
+
+WPEFRAMEWORK_ESPIAL_CONF_OPTS += -DBUILD_REFERENCE=${WPEFRAMEWORK_ESPIAL_VERSION} -DBCM_REFSW_DIR=$(BCM_REFSW_DIR)
+
+ifeq ($(BR2_PACKAGE_PLUGIN_DEBUG),y)
+# PLUGIN_ESPIAL_BROWSER_CONF_OPTS += -DCMAKE_BUILD_TYPE=Debug
+WPEFRAMEWORK_ESPIAL_CONF_OPTS += -DCMAKE_CXX_FLAGS='-g -Og'
+endif
+
+ifeq ($(BR2_PACKAGE_PLUGIN_ESPIAL_AUTOSTART),y)
+WPEFRAMEWORK_ESPIALCONF_OPTS += -DPLUGIN_AUTOSTART=true
+else
+WPEFRAMEWORK_ESPIAL_CONF_OPTS += -DPLUGIN_AUTOSTART=false
+endif
+
+ifneq ($(BR2_PACKAGE_PLUGIN_ESPIAL_URL),)
+WPEFRAMEWORK_ESPIAL_CONF_OPTS += -DPLUGIN_URL="$(call qstrip,$(BR2_PACKAGE_PLUGIN_ESPIAL_URL))"
+endif
+
+$(eval $(cmake-package))

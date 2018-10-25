@@ -1,0 +1,24 @@
+if BR2_PACKAGE_UMA_SDK
+
+menuconfig BR2_PACKAGE_WPEFRAMEWORK_ESPIAL
+    bool "Espial"
+    depends on BR2_arm 
+    help
+        WPE Platform Espial Browser plugin
+
+if BR2_PACKAGE_WPEFRAMEWORK_ESPIAL
+
+config BR2_PACKAGE_WPEFRAMEWORK_ESPIAL_AUTOSTART
+    bool "autostart"
+    default n
+
+config BR2_PACKAGE_WPEFRAMEWORK_ESPIAL_URL
+    string "URL"
+    default "http://www.google.com"
+
+endif
+
+comment "Espial Browser is dependent on the ARM architecture"
+    depends on !BR2_arm
+
+endif

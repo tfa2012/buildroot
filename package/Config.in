@@ -1898,3 +1898,8 @@ menu "Text editors and viewers"
 endmenu
 
 endmenu
+
+config BR2_PACKAGE_SDK_INSTALL 
+        string
+
+

@@ -14,19 +14,20 @@ define UMA_SDK_INSTALL_STAGING_CMDS
 	ln -sf $(STAGING_DIR)/usr/include/NOSPlayer/Player.h $(STAGING_DIR)/usr/include/Player.h
 	cp -Rpf $(@D)/usr/lib/Player/* $(STAGING_DIR)/usr/lib/
 	cp -Rpf $(@D)/usr/lib/Nagra/* $(STAGING_DIR)/usr/lib/
-	cp -f $(@D)/qorvo/rf4ce.pc $(STAGING_DIR)/usr/lib/pkgconfig
-	cp -f $(@D)/usr/lib/libGreenPeak.a $(STAGING_DIR)/usr/lib
-	cp -f $(@D)/qorvo/code/Work/libBinShippedRefTarget_ZRC_MSO_GP501_BCM_RDK.a $(STAGING_DIR)/usr/lib
+	# cp -f $(@D)/qorvo/rf4ce.pc $(STAGING_DIR)/usr/lib/pkgconfig
+	# cp -f $(@D)/usr/lib/libGreenPeak.a $(STAGING_DIR)/usr/lib
+	cp -f $(@D)/qorvo/code/Work/libBinShippedRefTarget_ZRC_MSO_GP501_BCM_RDK.a $(STAGING_DIR)/usr/lib/libqorvobase.a
 	mkdir -p $(STAGING_DIR)/usr/include/qorvo
-	cp -Rpf $(@D)/qorvo/code/Applications $(STAGING_DIR)/usr/include/qorvo
-	cp -Rpf $(@D)/qorvo/code/BaseComps $(STAGING_DIR)/usr/include/qorvo
+	cp -f $(@D)/qorvo/gpK5_hardware.h $(STAGING_DIR)/usr/include/qorvo
+	# cp -Rpf $(@D)/qorvo/code/Applications $(STAGING_DIR)/usr/include/qorvo
+	# cp -Rpf $(@D)/qorvo/code/BaseComps $(STAGING_DIR)/usr/include/qorvo
 endef
 
 define UMA_SDK_INSTALL_TARGET_CMDS
 	mkdir -p  $(TARGET_DIR)$(BR2_PACKAGE_BCM_REFSW_SAGE_PATH)
-	mkdir -p  $(TARGET_DIR)/lib/modules/misc
+	# mkdir -p  $(TARGET_DIR)/lib/modules/misc
 	$(INSTALL) -m 0755 -D $(@D)/usr/lib/Player/* $(TARGET_DIR)/usr/lib/
-	$(INSTALL) -m 0755 -D $(@D)/qorvo/gpK5.ko ${TARGET_DIR}/lib/modules/misc
+	# $(INSTALL) -m 0755 -D $(@D)/qorvo/gpK5.ko ${TARGET_DIR}/lib/modules/misc
 	$(INSTALL) -D -m 0644 $(@D)/firmware/sage/* $(TARGET_DIR)/$(BR2_PACKAGE_BCM_REFSW_SAGE_PATH)/
 endef
 
@@ -49,7 +50,7 @@ define QORVO_INSTALL_MODULE
 	$(MAKE) -C $(LINUX_DIR) $(LINUX_MAKE_FLAGS) M=$(@D)/Driver modules_install
 endef
 
-define UMA_SDK_BUILD_CMDS
+define QORVO_BUILD_LIB
 	cd $(@D)/qorvo ; \
 	SDKTARGETSYSROOT=${STAGING_DIR} \
         TOOLCHAIN=${HOST_DIR}/usr \

@@ -6,7 +6,7 @@
 GREENPEAK_CHIP = $(call qstrip,$(BR2_PACKAGE_GREENPEAK_TYPE))
 GREENPEAK_SITE_METHOD = git
 GREENPEAK_SITE = git@github.com:Metrological/greenpeak.git
-GREENPEAK_DEPENDENCIES = linux
+GREENPEAK_DEPENDENCIES = linux $(call qstrip,$(BR2_PACKAGE_SDK_INSTALL))
 GREENPEAK_INSTALL_STAGING = YES
 GREENPEAK_REPO_VERSION = 1.0
 
@@ -47,7 +47,7 @@ ifneq (,$(findstring $(GREENPEAK_CHIP_REPO), zd4500zno))
 GREENPEAK_EXTRA_MOD_CFLAGS += \
      -I$(STAGING_DIR)/usr/include/refsw/linuxkernel/include/ \
      -DGP_USE_NEXUS_SPI \
-     -I${@D}/Driver/BCM97358Ref \
+     -I${STAGING_DIR}/usr/include/qorvo
 
 define GREENPEAK_PREPARE_MODULE
 	$(INSTALL) -m 644 -D $(STAGING_DIR)/usr/include/refsw/linuxkernel/Module.symvers ${@D}/Driver/
@@ -61,7 +61,7 @@ define GREENPEAK_BUILD_MODULE
 endef
 
 define GREENPEAK_INSTALL_MODULE
-	$(MAKE) -C $(LINUX_DIR) $(LINUX_MAKE_FLAGS) M=$(@D)/Driver modules_install
+	$(MAKE) -C $(LINUX_DIR) $(LINUX_MAKE_FLAGS) INSTALL_MOD_DIR= M=$(@D)/Driver modules_install
 endef
 endif
 
@@ -92,7 +92,7 @@ define GREENPEAK_INSTALL_LIB_DEV
     $(INSTALL) -m 755 -d $(1)/usr/include/qorvo
     cp -a $(@D)/Stack/Work/bin/include/* $(1)/usr/include/qorvo
     $(INSTALL) -m 750 -D $(@D)/Stack/Work/bin/qorvo-rf4ce.pc $(1)/usr/lib/pkgconfig/rf4ce.pc
-    $(INSTALL) -m 750 -D $(@D)/Stack/Work/bin/*.a $(1)/usr/lib
+    $(INSTALL) -m 750 -D $(@D)/Stack/Work/bin/libqorvorf4ce.a $(1)/usr/lib
 endef
 endif
 

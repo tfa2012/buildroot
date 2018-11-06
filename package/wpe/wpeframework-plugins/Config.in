@@ -155,6 +155,13 @@ config BR2_PACKAGE_WPEFRAMEWORK_IOCONNECTOR
 	help
 	  Take custom action on hardware pins that changes state.
 
+config BR2_PACKAGE_WPEFRAMEWORK_FRONTPANEL
+    select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
+    bool "FrontPanel"
+    default n
+    help
+      FrontPanel Plugin.
+
 menuconfig BR2_PACKAGE_WPEFRAMEWORK_LOCATIONSYNC
     select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
     bool "LocationSync"
@@ -564,5 +571,28 @@ config BR2_PACKAGE_WPEFRAMEWORK_PLUGIN_RTSPCLIENT
     bool "RTSPCLIENT"
     help
       RTSP Client Plugin
+
+config BR2_PACKAGE_WPEFRAMEWORK_POWER
+    select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
+    default n
+    bool "Power"
+    help
+      Power Control Plugin
+
+if BR2_PACKAGE_WPEFRAMEWORK_POWER
+
+config BR2_PACKAGE_WPEFRAMEWORK_POWER_AUTOSTART
+    bool "autostart"
+    default y
+
+config BR2_PACKAGE_WPEFRAMEWORK_POWER_GPIOPIN
+    string "gpiopin"
+    default ""
+
+config BR2_PACKAGE_WPEFRAMEWORK_POWER_GPIOTYPE
+    string "gpiotype"
+    default ""
+
+endif
 
 comment "External plugins below"

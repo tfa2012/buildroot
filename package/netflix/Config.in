@@ -1,6 +1,5 @@
 config BR2_PACKAGE_NETFLIX
 	bool "netflix"
-    default n
 	select BR2_PACKAGE_LIBMNG
 	select BR2_PACKAGE_LIBPNG
 	select BR2_PACKAGE_ICU

@@ -292,23 +292,11 @@ config BR2_PACKAGE_WPEFRAMEWORK_SNAPSHOT
     help
       Snapshot Plugin
 
-config BR2_PACKAGE_WPEFRAMEWORK_SICONTROL
-    select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-    bool "SI control"
-    help
-      SI Control Plugin
-
 config BR2_PACKAGE_WPEFRAMEWORK_TIMESYNC
     select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
     bool "TimeSync"
     help
       TimeSync Plugin
-
-config BR2_PACKAGE_WPEFRAMEWORK_TUNER
-    select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
-    bool "Tuner"
-    help
-      Tuner Plugin
 
 config BR2_PACKAGE_WPEFRAMEWORK_TRACECONTROL
     select BR2_PACKAGE_WPEFRAMEWORK_PLUGINS
@@ -481,6 +469,14 @@ menuconfig BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
       TVControl Plugin
 
 if BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL
+menu "DVB Tuner Firmware"
+    config BR2_PACKAGE_DVB_WINTV_TUNER
+        depends on BR2_PACKAGE_RPI_FIRMWARE
+        bool "Hauppauge WinTV Tuner"
+        help
+            Enable Hauppauge WinTV Tuner firmware (Rebuild linux after enabling.)
+endmenu
+
 choice
     bool "TVPlatform"
     help
@@ -489,6 +485,8 @@ choice
 menuconfig BR2_PACKAGE_TVPLATFORM_LINUXTV
     bool "wpetvplatform-linuxtv"
     depends on BR2_PACKAGE_DVB_APPS
+    select BR2_PACKAGE_GST1_LIBAV
+    select BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_DVB
     help
       Base library for TVPlatform Implementation for LinuxTV.
 
@@ -498,7 +496,6 @@ endchoice
 
 choice
     bool "DBS Options"
-    default BR2_PACKAGE_WPEFRAMEWORK_TVCONTROL_DVB
     help
       Choose the DBS flavor.
 

@@ -1,0 +1,13 @@
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index b9f5106..3438c59 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -2412,7 +2412,7 @@ void MediaPlayerPrivateGStreamer::createGSTPlayBin()
+     m_videoSink = gst_element_factory_make( "brcmvideosink", "brcmvideosink");
+     g_object_set(m_pipeline.get(), "video-sink", m_videoSink.get(), nullptr);
+     
+-    GValue window_set = {0, };
++    GValue window_set = G_VALUE_INIT;
+     static char str[40];
+     snprintf(str, 40, "%d,%d,%d,%d", 0,0, 1280, 720);
+ 

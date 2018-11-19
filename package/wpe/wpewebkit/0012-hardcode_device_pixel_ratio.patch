@@ -1,0 +1,13 @@
+diff --git a/Source/WebCore/page/DOMWindow.cpp b/Source/WebCore/page/DOMWindow.cpp
+index 4927bd4..466e22b 100644
+--- a/Source/WebCore/page/DOMWindow.cpp
++++ b/Source/WebCore/page/DOMWindow.cpp
+@@ -1534,6 +1534,8 @@ double DOMWindow::devicePixelRatio() const
+     if (!page)
+         return 0.0;
+ 
++    return 2.0;
++
+     return page->deviceScaleFactor();
+ }
+ 

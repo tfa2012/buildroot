@@ -1,0 +1,19 @@
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp
+index af8e858..4b2f313 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamerBase.cpp
+@@ -1221,6 +1221,15 @@ unsigned MediaPlayerPrivateGStreamerBase::droppedFrameCount() const
+     guint64 framesDropped = 0;
+     if (m_fpsSink)
+         g_object_get(m_fpsSink.get(), "frames-dropped", &framesDropped, nullptr);
++    
++#if PLATFORM(BCM_NEXUS)
++    GstElement* videoSink = nullptr;
++    videoSink = findVideoSink(m_pipeline.get());
++    if (videoSink) {
++        g_object_get(videoSink, "frames-dropped", &framesDropped, nullptr);
++        GST_DEBUG("frames dropped: %llu",  framesDropped);
++    }
++#endif
+     return static_cast<unsigned>(framesDropped);
+}

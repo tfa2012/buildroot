@@ -1,0 +1,22 @@
+From 12abcd092007a701bf1c0b2b5d29cd4c69ff3d18 Mon Sep 17 00:00:00 2001
+From: Wouter Meek <woutermeek@users.noreply.github.com>
+Date: Sun, 9 Sep 2018 23:26:53 +0200
+Subject: [PATCH] [WebKitBrowser/InjectableBundle] make it compile in debug
+
+---
+ WebKitBrowser/InjectedBundle/main.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/WebKitBrowser/InjectedBundle/main.cpp b/WebKitBrowser/InjectedBundle/main.cpp
+index 2ab07dd..70d67be 100644
+--- a/WebKitBrowser/InjectedBundle/main.cpp
++++ b/WebKitBrowser/InjectedBundle/main.cpp
+@@ -75,7 +75,7 @@ static class PluginHost
+                     TRACE_L1("Could not open the connection, error (%d)", result);
+                 } 
+                 else if (_comClient->WaitForCompletion(RPC::CommunicationTimeOut) == false) {
+-                    TRACE_L1("Could not exchange the initial AnnounceMessage");
++                    TRACE_L1("Could not exchange the initial AnnounceMessage: line %d ", __LINE__);
+                 }
+             }
+ 

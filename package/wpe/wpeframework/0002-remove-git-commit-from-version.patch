@@ -1,0 +1,26 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4306560..6a1197c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -49,21 +49,6 @@ set(VERSION_MINOR 0)
+ set(VERSION_PATCH 0)
+ set(VERSION_REVISION "0000000")
+ 
+-# Git (and its revision)
+-find_package(Git QUIET) # if we don't find git or FindGit.cmake is not on the system we ignore it.
+-
+-if(GIT_FOUND) # GIT revision
+-    include(GetGitRevisionDescription)
+-    get_git_short_revision(GIT_SHA1)
+-    if(GIT_SHA1 STREQUAL "GITDIR-")
+-       message(STATUS "Not building WPEFramework from git")
+-       set(GIT_SHA1 "no_git")
+-    else()
+-       message(STATUS "GIT revision ${GIT_SHA1}")
+-    endif()
+-    set(VERSION_REVISION ${GIT_SHA1})
+-endif()
+-
+ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION})
+ 
+ if (BUILD_REFERENCE)

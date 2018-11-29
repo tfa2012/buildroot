@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-NETFLIX5_VERSION = 0d84b085fa5b03bdf9735542f7372eb6d01f83fe
-NETFLIX5_VERSION = 3b2839fbf7d0f84ec8948bcb6e52e4f38c5f8ff4
+NETFLIX5_VERSION = e7f871ae7bfc782626763693f6158f7c92071e6c
+
 NETFLIX5_SITE = git@github.com:Metrological/netflix.git
 NETFLIX5_SITE_METHOD = git
 NETFLIX5_LICENSE = PROPRIETARY
@@ -39,20 +39,15 @@ NETFLIX5_CONF_OPTS = \
 	-DBUILD_DEBUG=OFF -DNRDP_HAS_GIBBON_QA=ON -DNRDP_HAS_MUTEX_STACK=ON -DNRDP_HAS_OBJECTCOUNT=ON \
 	-DBUILD_PRODUCTION=OFF -DNRDP_HAS_QA=ON -DBUILD_SMALL=OFF -DBUILD_SYMBOLS=ON -DNRDP_HAS_TRACING=OFF \
 	-DNRDP_CRASH_REPORTING=breakpad \
-	-DNRDP_HAS_AUDIOMIXER=OFF \
 	-DDPI_SINK_INTERFACE_OVERRIDE_APPBOOT=ON \
-	-DGIBBON_GRAPHICS=rpi \
-	-DGIBBON_GRAPHICS_GL_WSYS=egl \
-	-DNETFLIX5_BUILD_PLAYER01=ON \
-	-DNETFLIX5_BUILD_PLAYER02=ON \
-	-DNETFLIX5_BUILD_PLAYER03=ON
+	-DGIBBON_GRAPHICS_GL_WSYS=egl
 
 ifeq ($(BR2_PACKAGE_NETFLIX5_LIB), y)	
 NETFLIX5_INSTALL_STAGING = YES
 NETFLIX5_CONF_OPTS += -DGIBBON_MODE=shared
 NETFLIX5_FLAGS = -O3 -fPIC
 else
-NETFLIX5_CONF_OPTS += -DGIBBON_MODE=executable
+NETFLIX5_CONF_OPTS += 	-DGIBBON_MODE=executable
 endif
 
 ifeq ($(BR2_PACKAGE_NETFLIX5_AUDIO_MIXER_SOFTWARE), y)
@@ -86,7 +81,8 @@ else ifeq ($(BR2_PACKAGE_NETFLIX5_WESTEROS_SINK),y)
 endif
 
 ifeq ($(BR2_PACKAGE_RPI_USERLAND),y)
-
+NETFLIX5_CONF_OPTS += \
+        -DGIBBON_GST_PLATFORM=rpi #TODO remove it once GIBBON_PLATFORM for rpi is ready
 ifeq ($(BR2_PACKAGE_WESTEROS)$(BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR),yy)
 NETFLIX5_CONF_OPTS += \
 	-DGIBBON_GRAPHICS=wpeframework 
@@ -225,9 +221,23 @@ NETFLIX5_CONF_OPTS += \
 	-DCMAKE_C_FLAGS="$(TARGET_CFLAGS) $(NETFLIX5_FLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(TARGET_CXXFLAGS) $(NETFLIX5_FLAGS)"
 
+define NETFLIX5_FIX_CONFIG_XMLS
+	mkdir -p $(@D)/netflix/src/platform/gibbon/data/etc/conf
+	cp -f $(@D)/netflix/resources/configuration/common.xml $(@D)/netflix/src/platform/gibbon/data/etc/conf/common.xml
+	cp -f $(@D)/netflix/resources/configuration/config.xml $(@D)/netflix/src/platform/gibbon/data/etc/conf/config.xml
+endef
+
+NETFLIX5_POST_EXTRACT_HOOKS += NETFLIX5_FIX_CONFIG_XMLS
+
 ifeq ($(BR2_PACKAGE_NETFLIX5_LIB),y)
 
-define N ETFLIX5_INSTALL_STAGING_CMDS
+ifeq ($(BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR),y)
+define NETFLIX5_INSTALL_WPEFRAMEWORK_XML
+	cp $(@D)/partner/graphics/wpeframework/graphics.xml $(TARGET_DIR)/root/Netflix/etc/conf
+endef
+endif
+
+define NETFLIX5_INSTALL_STAGING_CMDS
 	make -C $(@D)/netflix install
 	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/libnetflix.so $(STAGING_DIR)/usr/lib
 	$(INSTALL) -D package/netflix/netflix.pc $(STAGING_DIR)/usr/lib/pkgconfig/netflix.pc
@@ -261,25 +271,16 @@ define N ETFLIX5_INSTALL_STAGING_CMDS
 	cp -r $(@D)/netflix/src/platform/gibbon/resources/gibbon/icu $(TARGET_DIR)/root/Netflix
 	cp -r $(@D)/netflix/src/platform/gibbon/resources $(TARGET_DIR)/root/Netflix
 	cp -r $(@D)/netflix/resources/configuration/* $(TARGET_DIR)/root/Netflix/etc/conf
-	cp $(@D)/partner/graphics/wpeframework/graphics.xml $(TARGET_DIR)/root/Netflix/etc/conf
+
+        $(NETFLIX5_INSTALL_WPEFRAMEWORK_XML)
 	cp $(@D)/netflix/src/platform/gibbon/resources/gibbon/icu/icudt58l/debug/unames.icu $(TARGET_DIR)/root/Netflix/icu/icudt58l
 	cp $(@D)/netflix/src/platform/gibbon/*.js* $(TARGET_DIR)/root/Netflix/resources/js
 	cp $(@D)/netflix/src/platform/gibbon/resources/default/PartnerBridge.js $(TARGET_DIR)/root/Netflix/resources/js
-	
-	$(INSTALL) -m 755 $(@D)/netflix/tests_binary_output/player01/netflix5_player01 $(STAGING_DIR)/usr/bin
-	$(INSTALL) -m 755 $(@D)/netflix/tests_binary_output/player02/netflix5_player02 $(STAGING_DIR)/usr/bin
-	$(INSTALL) -m 755 $(@D)/netflix/tests_binary_output/player03/netflix5_player03 $(STAGING_DIR)/usr/bin
 endef
 
 define NETFLIX5_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/libnetflix.so $(TARGET_DIR)/usr/lib
 	$(STRIPCMD) $(TARGET_DIR)/usr/lib/libnetflix.so
-	$(INSTALL) -m 755 $(@D)/netflix/tests_binary_output/player01/netflix5_player01 $(TARGET_DIR)/usr/bin
-	$(STRIPCMD) $(TARGET_DIR)/usr/bin/netflix5_player01
-	$(INSTALL) -m 755 $(@D)/netflix/tests_binary_output/player02/netflix5_player02 $(TARGET_DIR)/usr/bin
-	$(STRIPCMD) $(TARGET_DIR)/usr/bin/netflix5_player02
-	$(INSTALL) -m 755 $(@D)/netflix/tests_binary_output/player03/netflix5_player03 $(TARGET_DIR)/usr/bin
-	$(STRIPCMD) $(TARGET_DIR)/usr/bin/netflix5_player03
 endef
 
 else

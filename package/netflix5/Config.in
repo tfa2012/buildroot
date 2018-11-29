@@ -1,5 +1,4 @@
 config BR2_PACKAGE_NETFLIX5
-    default y
 	bool "netflix5"
 	select BR2_PACKAGE_LIBMNG
 	select BR2_PACKAGE_LIBPNG

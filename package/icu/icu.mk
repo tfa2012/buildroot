@@ -17,15 +17,19 @@ ICU_SITE = http://download.icu-project.org/files/icu4c/$(ICU_VERSION)
 ICU_LICENSE = ICU License
 ICU_LICENSE_FILES = license.html
 
+ifeq ($(ICU_VERSION),58.2)
 define ICU_USE_CUSTOM_ICUDATA
-    rm $(@D)/source/data/in/icudt58l.dat
+    rm -f $(@D)/source/data/in/icudt58l.dat
     cp package/icu/icudt58l.dat $(@D)/source/data/in/
-    
-    rm $(HOST_ICU_DIR)/source/data/in/icudt58l.dat
+endef
+define HOST_ICU_USE_CUSTOM_ICUDATA
+    rm -f $(HOST_ICU_DIR)/source/data/in/icudt58l.dat
     cp package/icu/icudt58l.dat $(HOST_ICU_DIR)/source/data/in/
 endef
+endif
+
 ICU_POST_PATCH_HOOKS += ICU_USE_CUSTOM_ICUDATA
-HOST_ICU_POST_PATCH_HOOKS += ICU_USE_CUSTOM_ICUDATA
+HOST_ICU_POST_PATCH_HOOKS += HOST_ICU_USE_CUSTOM_ICUDATA
 
 ICU_DEPENDENCIES = host-icu
 ICU_INSTALL_STAGING = YES
@@ -54,6 +58,7 @@ HOST_ICU_CONF_OPTS = \
 	--disable-icuio \
 	--disable-layout \
 	--disable-renaming
+
 ICU_SUBDIR = source
 HOST_ICU_SUBDIR = source
 

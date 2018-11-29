@@ -59,6 +59,10 @@ config BR2_PACKAGE_NETFLIX5_WESTEROS_SINK
 	depends on BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR
 	default n
 
+config BR2_PACKAGE_NETFLIX5_AUDIO_MIXER_SOFTWARE
+	bool "audio-mixer"
+	select BR2_PACKAGE_TREMOR
+	default n
 endmenu
 
 endif

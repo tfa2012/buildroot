@@ -5,12 +5,12 @@
 ################################################################################
 
 NETFLIX5_VERSION = 0d84b085fa5b03bdf9735542f7372eb6d01f83fe
+NETFLIX5_VERSION = 3b2839fbf7d0f84ec8948bcb6e52e4f38c5f8ff4
 NETFLIX5_SITE = git@github.com:Metrological/netflix.git
 NETFLIX5_SITE_METHOD = git
 NETFLIX5_LICENSE = PROPRIETARY
 NETFLIX5_DEPENDENCIES = freetype icu jpeg libpng libmng webp harfbuzz expat openssl c-ares libcurl graphite2 nghttp2 wpeframework gst1-plugins-base wpeframework-plugins
 NETFLIX5_INSTALL_TARGET = YES
-NETFLIX5_INSTALL_STAGING = YES
 NETFLIX5_SUBDIR = netflix
 NETFLIX5_RESOURCE_LOC = $(call qstrip,${BR2_PACKAGE_NETFLIX5_RESOURCE_LOCATION})
 
@@ -46,12 +46,21 @@ NETFLIX5_CONF_OPTS = \
 	-DNETFLIX5_BUILD_PLAYER01=ON \
 	-DNETFLIX5_BUILD_PLAYER02=ON \
 	-DNETFLIX5_BUILD_PLAYER03=ON
-	
+
 ifeq ($(BR2_PACKAGE_NETFLIX5_LIB), y)	
+NETFLIX5_INSTALL_STAGING = YES
 NETFLIX5_CONF_OPTS += -DGIBBON_MODE=shared
 NETFLIX5_FLAGS = -O3 -fPIC
 else
 NETFLIX5_CONF_OPTS += -DGIBBON_MODE=executable
+endif
+
+ifeq ($(BR2_PACKAGE_NETFLIX5_AUDIO_MIXER_SOFTWARE), y)
+NETFLIX5_CONF_OPTS += -DNRDP_HAS_AUDIOMIXER=ON \
+                      -DUSE_AUDIOMIXER_GST=ON
+NETFLIX5_DEPENDENCIES += tremor
+else
+NETFLIX5_CONF_OPTS += -DNRDP_HAS_AUDIOMIXER=OFF
 endif
 
 ifeq ($(BR2_PACKAGE_WESTEROS)$(BR2_PACKAGE_WPEFRAMEWORK_COMPOSITOR),yy)
@@ -89,7 +98,7 @@ NETFLIX5_CONF_OPTS += \
 	-DGIBBON_GRAPHICS=rpi-egl
 endif	
 NETFLIX5_CONF_OPTS += \
-	-DGIBBON_PLATFORM=rpi
+#	-DGIBBON_PLATFORM=rpi //Enable once port platform layer
 ifeq ($(BR2_PACKAGE_GST1_PLUGINS_BAD_PLUGIN_GL)$(BR2_PACKAGE_NETFLIX5_WESTEROS_SINK),yn)
 NETFLIX5_CONF_OPTS += \
 	-DGST_VIDEO_RENDERING=gl
@@ -216,7 +225,9 @@ NETFLIX5_CONF_OPTS += \
 	-DCMAKE_C_FLAGS="$(TARGET_CFLAGS) $(NETFLIX5_FLAGS)" \
 	-DCMAKE_CXX_FLAGS="$(TARGET_CXXFLAGS) $(NETFLIX5_FLAGS)"
 
-define NETFLIX5_INSTALL_STAGING_CMDS
+ifeq ($(BR2_PACKAGE_NETFLIX5_LIB),y)
+
+define N ETFLIX5_INSTALL_STAGING_CMDS
 	make -C $(@D)/netflix install
 	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/libnetflix.so $(STAGING_DIR)/usr/lib
 	$(INSTALL) -D package/netflix/netflix.pc $(STAGING_DIR)/usr/lib/pkgconfig/netflix.pc
@@ -270,6 +281,14 @@ define NETFLIX5_INSTALL_TARGET_CMDS
 	$(INSTALL) -m 755 $(@D)/netflix/tests_binary_output/player03/netflix5_player03 $(TARGET_DIR)/usr/bin
 	$(STRIPCMD) $(TARGET_DIR)/usr/bin/netflix5_player03
 endef
+
+else
+
+define NETFLIX5_INSTALL_TARGET_CMDS
+	$(INSTALL) -m 755 $(@D)/netflix/src/platform/gibbon/netflix $(TARGET_DIR)/usr/bin
+endef
+
+endif
 
 define NETFLIX5_PREPARE_DPI
 	mkdir -p $(TARGET_DIR)/root/Netflix/dpi

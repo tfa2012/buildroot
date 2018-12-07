@@ -1,0 +1,13 @@
+diff --git a/WebKitBrowser/YouTube.config b/WebKitBrowser/YouTube.config
+index 23a4d1f..f9ed9f5 100644
+--- a/WebKitBrowser/YouTube.config
++++ b/WebKitBrowser/YouTube.config
+@@ -23,7 +23,7 @@ map()
+     kv(fps true)
+     kv(cursor false)
+     kv(touch false)
+-    kv(msebuffers "audio:2m,video:15m,text:1m")
++    kv(msebuffers "audio:5m,video:60m,text:1m")
+     kv(memoryprofile ${WPEFRAMEWORK_PLUGIN_WEBKITBROWSER_MEMORYPROFILE})
+     kv(memorypressure ${WPEFRAMEWORK_PLUGIN_WEBKITBROWSER_MEMORYPRESSURE})
+     kv(mediadiskcache ${WPEFRAMEWORK_PLUGIN_WEBKITBROWSER_MEDIADISKCACHE})

@@ -1,0 +1,22 @@
+diff --git a/Source/WebCore/platform/wpe/PlatformKeyboardEventWPE.cpp b/Source/WebCore/platform/wpe/PlatformKeyboardEventWPE.cpp
+index c69f252..b954dfc 100644
+--- a/Source/WebCore/platform/wpe/PlatformKeyboardEventWPE.cpp
++++ b/Source/WebCore/platform/wpe/PlatformKeyboardEventWPE.cpp
+@@ -336,7 +336,7 @@ String PlatformKeyboardEvent::keyValueForWPEKeyCode(unsigned keyCode)
+     case WPE_KEY_AudioPause:
+         return ASCIILiteral("MediaPause");
+     case WPE_KEY_AudioPlay:
+-        return ASCIILiteral("MediaPlay");
++        return ASCIILiteral("MediaPlayPause");
+     // MediaPlayPause
+     case WPE_KEY_AudioRecord:
+         return ASCIILiteral("MediaRecord");
+@@ -1230,7 +1230,7 @@ int PlatformKeyboardEvent::windowsKeyCodeForWPEKeyCode(unsigned keycode)
+         // VK_EXSEL (F8) ExSel key
+         // VK_EREOF (F9) Erase EOF key
+     case WPE_KEY_AudioPlay:
+-        return VK_PLAY; // VK_PLAY (FA) Play key
++        return VK_MEDIA_PLAY_PAUSE; // VK_PLAY (FA) Play key
+         // VK_ZOOM (FB) Zoom key
+         // VK_NONAME (FC) Reserved for future use
+         // VK_PA1 (FD) PA1 key

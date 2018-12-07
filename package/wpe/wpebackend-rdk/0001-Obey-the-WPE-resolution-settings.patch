@@ -1,0 +1,35 @@
+From 90b60c72fc0f557d1ca6d64952ea0f7c8daa94da Mon Sep 17 00:00:00 2001
+From: Bram Oosterhuis <bram.oosterhuis.nl@gmail.com>
+Date: Wed, 28 Nov 2018 13:28:00 +0100
+Subject: [PATCH] Obey the WPE resolution settings
+
+---
+ src/bcm-nexus/view-backend.cpp | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/bcm-nexus/view-backend.cpp b/src/bcm-nexus/view-backend.cpp
+index 9f77c6f..293b118 100644
+--- a/src/bcm-nexus/view-backend.cpp
++++ b/src/bcm-nexus/view-backend.cpp
+@@ -164,6 +164,18 @@ void ViewBackend::initialize()
+ 
+     width = std::get<1>(selectedFormat);
+     height = std::get<2>(selectedFormat);
++    
++    const char *width_text = ::getenv("WEBKIT_RESOLUTION_WIDTH");
++    const char *height_text = ::getenv("WEBKIT_RESOLUTION_HEIGHT");
++    if (width_text != nullptr)
++    {
++        width = ::atoi(width_text);
++    }
++    if (height_text != nullptr)
++    {
++        height = ::atoi(height_text);
++    }
++    
+     fprintf(stderr, "ViewBackend: selected format '%s' (%d,%d)\n",
+         std::get<0>(selectedFormat), width, height);
+ 
+-- 
+2.7.4
+

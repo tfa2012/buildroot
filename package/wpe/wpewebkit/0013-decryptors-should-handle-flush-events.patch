@@ -1,0 +1,129 @@
+diff --git a/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp
+index 6832887..3fe4a92 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp
+@@ -42,6 +42,7 @@ struct _WebKitMediaCommonEncryptionDecryptPrivate {
+     WTF::HashMap<String, WebCore::InitData> m_initDatas;
+     Vector<GRefPtr<GstEvent>> m_pendingProtectionEvents;
+     uint32_t m_currentEvent { 0 };
++    bool m_isFlushing { false };
+ };
+ 
+ static GstStateChangeReturn webKitMediaCommonEncryptionDecryptorChangeState(GstElement*, GstStateChange transition);
+@@ -245,9 +246,14 @@ static GstFlowReturn webkitMediaCommonEncryptionDecryptTransformInPlace(GstBaseT
+         ASSERT(!priv->m_waitingForKey);
+         priv->m_waitingForKey = true;
+         gst_element_post_message(GST_ELEMENT(self), gst_message_new_element(GST_OBJECT(self), gst_structure_new_empty("drm-waiting-for-key")));
+-        if (!priv->m_condition.waitFor(priv->m_mutex, WEBCORE_GSTREAMER_EME_LICENSE_KEY_RESPONSE_TIMEOUT, [priv] { return priv->m_keyReceived; })) {
+-            GST_ERROR_OBJECT(self, "key not available");
+-            return GST_FLOW_NOT_SUPPORTED;
++        if (!priv->m_condition.waitFor(priv->m_mutex, WEBCORE_GSTREAMER_EME_LICENSE_KEY_RESPONSE_TIMEOUT, [priv] { return priv->m_keyReceived || priv->m_isFlushing; })) {
++            if (priv->m_isFlushing) {
++                GST_DEBUG_OBJECT(self, "flushing");
++                return GST_FLOW_FLUSHING;
++            } else {
++                GST_ERROR_OBJECT(self, "key not available");
++                return GST_FLOW_NOT_SUPPORTED;
++            }
+         }
+         GST_DEBUG_OBJECT(self, "key received, continuing");
+     }
+@@ -496,6 +502,27 @@ static gboolean webkitMediaCommonEncryptionDecryptSinkEventHandler(GstBaseTransf
+         }
+         break;
+     }
++    case GST_EVENT_FLUSH_START: {
++        {
++            LockHolder locker(priv->m_mutex);
++            ASSERT(!priv->m_isFlushing);
++            priv->m_isFlushing = true;
++            GST_DEBUG_OBJECT(self, "flushing");
++            priv->m_condition.notifyOne();
++        }
++        result = GST_BASE_TRANSFORM_CLASS(parent_class)->sink_event(trans, event);
++        break;
++    }
++    case GST_EVENT_FLUSH_STOP: {
++        {
++            LockHolder locker(priv->m_mutex);
++            ASSERT(priv->m_isFlushing);
++            priv->m_isFlushing = false;
++            GST_DEBUG_OBJECT(self, "flushing done");
++        }
++        result = GST_BASE_TRANSFORM_CLASS(parent_class)->sink_event(trans, event);
++        break;
++    }
+     default:
+         result = GST_BASE_TRANSFORM_CLASS(parent_class)->sink_event(trans, event);
+         break;
+
+
+diff --git a/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp
+index 3fe4a92..d714156 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/eme/WebKitCommonEncryptionDecryptorGStreamer.cpp
+@@ -255,6 +255,10 @@ static GstFlowReturn webkitMediaCommonEncryptionDecryptTransformInPlace(GstBaseT
+                 return GST_FLOW_NOT_SUPPORTED;
+             }
+         }
++        if (priv->m_isFlushing) {
++             GST_INFO_OBJECT(self, "key received but drop this frame");
++             return GST_FLOW_FLUSHING;
++        }
+         GST_DEBUG_OBJECT(self, "key received, continuing");
+     }
+ 
+@@ -505,10 +509,12 @@ static gboolean webkitMediaCommonEncryptionDecryptSinkEventHandler(GstBaseTransf
+     case GST_EVENT_FLUSH_START: {
+         {
+             LockHolder locker(priv->m_mutex);
+-            ASSERT(!priv->m_isFlushing);
+-            priv->m_isFlushing = true;
+-            GST_DEBUG_OBJECT(self, "flushing");
+-            priv->m_condition.notifyOne();
++            if (!priv->m_keyReceived) {
++                ASSERT(!priv->m_isFlushing);
++                priv->m_isFlushing = true;
++                GST_INFO_OBJECT(self, "flushing");
++                priv->m_condition.notifyOne();
++            }
+         }
+         result = GST_BASE_TRANSFORM_CLASS(parent_class)->sink_event(trans, event);
+         break;
+@@ -516,9 +522,11 @@ static gboolean webkitMediaCommonEncryptionDecryptSinkEventHandler(GstBaseTransf
+     case GST_EVENT_FLUSH_STOP: {
+         {
+             LockHolder locker(priv->m_mutex);
+-            ASSERT(priv->m_isFlushing);
+-            priv->m_isFlushing = false;
+-            GST_DEBUG_OBJECT(self, "flushing done");
++            if (!priv->m_keyReceived) {
++                ASSERT(priv->m_isFlushing);
++                priv->m_isFlushing = false;
++                GST_INFO_OBJECT(self, "flushing done");
++            }
+         }
+         result = GST_BASE_TRANSFORM_CLASS(parent_class)->sink_event(trans, event);
+         break;
+diff --git a/Source/WebCore/platform/graphics/gstreamer/eme/CDMOpenCDM.cpp b/Source/WebCore/platform/graphics/gstreamer/eme/CDMOpenCDM.cpp
+index 7c5d520..456bb67 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/eme/CDMOpenCDM.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/eme/CDMOpenCDM.cpp
+@@ -289,8 +289,15 @@ void CDMInstanceOpenCDM::requestLicense(LicenseType licenseType, const AtomicStr
+ 
+     String sessionIdAsString = sessionIdByInitData(initData);
+     if (!sessionIdAsString.isEmpty()) {
+-        GST_DEBUG("session %s already created, bailing out", sessionIdAsString.utf8().data());
+-        callback(WTFMove(rawInitData), sessionIdAsString, false, Failed);
++        auto session = lookupSession(sessionIdAsString);
++        GST_INFO("session %s already exists", sessionIdAsString.utf8().data());
++        if (session->isValid()){
++            GST_INFO("session %s is valid, continue", sessionIdAsString.utf8().data());
++            callback(WTFMove(rawInitData), sessionIdAsString, session->needsIndividualization(), Succeeded);
++        } else {
++            GST_INFO("session %s is invalid, bailing out", sessionIdAsString.utf8().data());
++            callback(WTFMove(rawInitData), sessionIdAsString, false, Failed);
++        }
+         return;
+     }
+ 

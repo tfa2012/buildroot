@@ -1,0 +1,44 @@
+From 32ec04488822d34188a17aba82592aa948bea132 Mon Sep 17 00:00:00 2001
+From: wouterlucas <wouter@wouterlucas.com>
+Date: Mon, 10 Dec 2018 10:48:44 -0800
+Subject: [PATCH] [Gstreamer][Brcm] findVideoDecoder fails in cases where the
+ GST install does not report the decoder properly. Hack it to find the element
+ by name so PTS updates will work properly.
+
+Signed-off-by: wouterlucas <wouter@wouterlucas.com>
+---
+ .../graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp         | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+index e17f1047961..ca1df96b5c6 100644
+--- a/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
++++ b/Source/WebCore/platform/graphics/gstreamer/MediaPlayerPrivateGStreamer.cpp
+@@ -314,6 +314,7 @@ void MediaPlayerPrivateGStreamer::commitLoad()
+ static GstElement* findVideoDecoder(GstElement *element)
+ {
+     GstElement* re = nullptr;
++
+     if (GST_IS_BIN(element)) {
+         GstIterator* it = gst_bin_iterate_elements(GST_BIN(element));
+         GValue item = G_VALUE_INIT;
+@@ -338,8 +339,15 @@ static GstElement* findVideoDecoder(GstElement *element)
+         }
+         g_value_unset (&item);
+         gst_iterator_free(it);
+-    } else if (GST_IS_VIDEO_DECODER(element))
++    } else if (GST_IS_VIDEO_DECODER(element)) {
+         re = element;
++    } else {
++        GUniquePtr<gchar> elementName(gst_element_get_name(GST_ELEMENT(element)));
++        const char *videoDecoderName = "brcmvideodecoder0";
++        if (strcmp(elementName.get(),  videoDecoderName) == 0 )
++            re = element;
++    }
++
+     return re;
+ }
+ #endif
+-- 
+2.11.0
+

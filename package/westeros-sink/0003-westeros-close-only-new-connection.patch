@@ -1,0 +1,35 @@
+diff --git a/westeros-sink/westeros-sink.c b/westeros-sink/westeros-sink.c
+index b5fa0cb..4fa1662 100644
+--- a/westeros-sink/westeros-sink.c
++++ b/westeros-sink/westeros-sink.c
+@@ -412,6 +412,8 @@ static void gst_westeros_sink_class_init(GstWesterosSinkClass *klass)
+    gst_westeros_sink_soc_class_init(klass);
+ }
+ 
++bool connected  = false;
++
+ static void 
+ #ifdef USE_GST1
+ gst_westeros_sink_init(GstWesterosSink *sink)
+@@ -509,9 +511,11 @@ gst_westeros_sink_init(GstWesterosSink *sink, GstWesterosSinkClass *gclass)
+       if ( !sink->display ) 
+       {
+          sink->display= wl_display_connect(NULL);
++         connected = true;
+       }
+       if ( sink->display )
+       {
++         connected = false;
+          sink->queue= wl_display_create_queue(sink->display);
+          if ( sink->queue )
+          {
+@@ -593,7 +597,8 @@ static void gst_westeros_sink_term(GstWesterosSink *sink)
+    if ( sink->display )
+    {
+       printf("gst_westeros_sink_term: wl_display_disconnect: display=%p\n", (void*)sink->display);
+-      wl_display_disconnect(sink->display);
++      if (connected == true)
++         wl_display_disconnect(sink->display);
+       sink->display= 0;
+    }
+    
